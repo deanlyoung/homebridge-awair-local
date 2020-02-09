@@ -7,7 +7,7 @@ module.exports = function(homebridge) {
 	Service = homebridge.hap.Service;
 	Characteristic = homebridge.hap.Characteristic;
 	
-	homebridge.registerAccessory("homebridge-awair-local", "Awair Local", AwairLocal);
+	homebridge.registerAccessory("homebridge-awair-local", "AwairLocal", AwairLocal);
 };
 
 function AwairLocal(log, config) {
