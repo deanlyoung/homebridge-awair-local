@@ -41,18 +41,7 @@ See [config-sample.json](https://github.com/deanlyoung/homebridge-awair-local/bl
 		"accessory": "Awair",
 		"name": "Example Room 1 Awair",
 		"ip": "X.X.X.X",
-		"manufacturer": "Awair",
-		"devType": "awair-r2",
-		"devId": "123",
-		"serial": "awair-r2_123",
-		"model": "Awair",
-		"carbonDioxideThreshold": 1200,
-		"carbonDioxideThresholdOff": 1200,
-		"voc_mixture_mw": 72.66578273019740,
-		"air_quality_method": "awair-score",
-		"polling_interval": 10,
-		"limit": 12,
-		"logging": false
+		"polling_interval": 10
 	}
 ]
 ```
@@ -61,12 +50,12 @@ See [config-sample.json](https://github.com/deanlyoung/homebridge-awair-local/bl
 ```
 	     `accessory`	=> The Homebridge Accessory (REQUIRED, must be exactly: `AwairLocal`)
 		  `name`	=> The accessory name that appears by default in HomeKit (REQUIRED, can be anything)
-		 `ip`	=> The IP Address of your Awair device on your local network, for example: 192.168.1.2 or 10.0.1.2, so it is recommended that you assign a DHCP Reservation to your device.
+		 `ip`	=> The IP Address of your Awair device on your local network, for example: 192.168.1.2 or 10.0.1.2, so it is recommended that you assign a DHCP Reservation to your device. (REQUIRED)
 	  `manufacturer`	=> Manufacturer (OPTIONAL, default = `Awair`)
-	       `devType`	=> Device Type (REQUIRED, options: `awair-glow-c`, `awair-mint`, `awair-omni`, `awair-element`, or `awair-r2`)
-		 `devId`	=> Device ID (REQUIRED, see [Installation](#installation))
-		`serial`	=> Serial Number (OPTIONAL, default = `devType_devId`, options: `mac-address` or `devType_devId`)
-		 `model`	=> Device Model (OPTIONAL, default = `devType`, options: `Awair Glow C`, `Awair Mint`, `Awair Omni`, `Awair Element`, `Awair 2nd Edition`)
+	       `devType`	=> Device Type (OPTIONAL, automatically captured from "/settings/config/data")
+		 `devId`	=> Device ID (OPTIONAL, automatically captured from "/settings/config/data")
+		`serial`	=> Serial Number (OPTIONAL, automatically captured from "/settings/config/data")
+		 `model`	=> Device Model (OPTIONAL, automatically captured from "/settings/config/data")
 `carbonDioxideThreshold`	=> (OPTIONAL, default = `0` [i.e. OFF], the level at which HomeKit will trigger an alert for the CO2 in ppm)
 `carbonDioxideThresholdOff`	=> (OPTIONAL, default = `0` [i.e. `carbonDioxideThreshold`], the level at which HomeKit will turn off the trigger alert for the CO2 in ppm, to ensure that it doesn't trigger on/off too frequently choose a number lower than `carbonDioxideThreshold`)
 	`voc_mixture_mw`	=> The Molecular Weight (g/mol) of a reference gas or mixture that you use to convert from ppb to ug/m^3 (OPTIONAL, default = `72.66578273019740`)
@@ -74,6 +63,7 @@ See [config-sample.json](https://github.com/deanlyoung/homebridge-awair-local/bl
 	       `polling`	=> The frequency (OPTIONAL, default = `10` (10 seconds), units: seconds, that you would like to update the data in HomeKit)
 		 `limit`	=> Number of consecutive 10 second data points used for custom averaging of sensor values (OPTIONAL, default = `12` i.e. 2 minute average)
 		   `url`	=> The Awair url to poll (OPTIONAL, EDITING NOT RECOMMENDED)
+	 `configUrl`	=> The Awair Config url to poll (OPTIONAL, EDITING NOT RECOMMENDED)
 	       `logging`	=> Whether to output logs to the Homebridge logs (OPTIONAL, default = `false`)
 ```
 

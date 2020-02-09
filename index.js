@@ -15,9 +15,6 @@ function AwairLocal(log, config) {
 	this.logging = config["logging"] || false;
 	this.ip = config["ip"];
 	this.manufacturer = config["manufacturer"] || "Awair";
-	this.devType = config["devType"];
-	this.devId = config["devId"];
-	this.serial = config["serial"] || this.devType + "_" + this.devId;
 	this.carbonDioxideThreshold = Number(config["carbonDioxideThreshold"] || 0); // ppm, 0 = OFF
 	this.carbonDioxideThresholdOff = Number(config["carbonDioxideThresholdOff"] || config["carbonDioxideThreshold"]); // ppm, same as carbonDioxideThreshold by default, should be less than or equal to carbonDioxideThreshold
 	this.vocMW = Number(config["voc_mixture_mw"] || 72.66578273019740); // Molecular Weight (g/mol) of a reference VOC gas or mixture
@@ -25,6 +22,39 @@ function AwairLocal(log, config) {
 	this.polling_interval = Number(config["polling_interval"] || 10); // seconds (default: 10 seconds)
 	this.limit = Number(config["limit"] || 12); // consecutive 10 second samples averaged (default: 12 x 10 = 120 seconds)
 	this.url = config["url"] || "http://" + this.ip + "/air-data/latest";
+	this.configUrl = config["url"] || "http://" + this.ip + "/settings/config/data";
+	
+	getConfig: function() {
+		var configOptions = {
+			method: "GET",
+			uri: this.configUrl,
+			json: true
+		};
+		
+		if(this.logging){this.log("[" + this.ip + "] url: " + this.url)};
+		
+		var that = this;
+		
+		return request(configOptions)
+			.then(function(response) {
+				var configData = response;
+				
+				var devUuid = configData.device_uuid;
+				
+				that.devType = config["devType"] || devUuid.split("_")[0];
+				that.devId = config["devId"] || devUuid.split("_")[1];
+				that.serial = config["serial"] || configData.wifi_mac;
+				that.version = config["version"] || configData.fw_version;
+			})
+			.catch(function(err) {
+				if(that.logging){that.log("[" + that.ip + "] " + err)};
+				that.informationService
+					.setCharacteristic(Characteristic.Manufacturer, "--")
+					.setCharacteristic(Characteristic.Model, "--")
+					.setCharacteristic(Characteristic.SerialNumber, "--")
+					.setCharacteristic(Characteristic.FirmwareRevision, "--");
+			});
+	}
 }
 
 AwairLocal.prototype = {
@@ -471,7 +501,7 @@ AwairLocal.prototype = {
 			.setCharacteristic(Characteristic.Manufacturer, this.manufacturer)
 			.setCharacteristic(Characteristic.Model, this.devType)
 			.setCharacteristic(Characteristic.SerialNumber, this.serial)
-			.setCharacteristic(Characteristic.FirmwareRevision, packageJSON.version);
+			.setCharacteristic(Characteristic.FirmwareRevision, this.version);
 		this.informationService = informationService;
 		services.push(informationService);
 		
