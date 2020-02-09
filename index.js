@@ -464,6 +464,11 @@ AwairLocal.prototype = {
 	getServices: function() {
 		var services = [];
 		
+		var devType;
+		var devId;
+		var serial;
+		var version;
+		
 		var configOptions = {
 			method: "GET",
 			uri: this.configUrl,
@@ -476,16 +481,14 @@ AwairLocal.prototype = {
 			.then(function(response) {
 				var configData = response;
 				
-				var placeholder = JSON.stringify(configData);
-				
-				if(this.logging){this.log("[" + configData.wifi_mac + "] " + this.configUrl + ": " + "{{placeholder}}")};
+				if(this.logging){this.log("[" + configData.wifi_mac + "] " + this.configUrl + ": " + JSON.stringify(configData))};
 				
 				var devUuid = configData.device_uuid;
 				
-				this.devType = devUuid.split("_")[0];
-				this.devId = devUuid.split("_")[1];
-				this.serial = configData.wifi_mac;
-				this.version = configData.fw_version;
+				devType = devUuid.split("_")[0];
+				devId = devUuid.split("_")[1];
+				serial = configData.wifi_mac;
+				version = configData.fw_version;
 			})
 			.catch(function(err) {
 				if(this.logging){this.log("[" + this.ip + "] " + err)};
@@ -494,14 +497,14 @@ AwairLocal.prototype = {
 					.setCharacteristic(Characteristic.Model, "--")
 					.setCharacteristic(Characteristic.SerialNumber, "--")
 					.setCharacteristic(Characteristic.FirmwareRevision, "--");
-		});
+			});
 		
 		var informationService = new Service.AccessoryInformation();
 		informationService
 			.setCharacteristic(Characteristic.Manufacturer, this.manufacturer)
-			.setCharacteristic(Characteristic.Model, this.devType)
-			.setCharacteristic(Characteristic.SerialNumber, this.serial)
-			.setCharacteristic(Characteristic.FirmwareRevision, this.version);
+			.setCharacteristic(Characteristic.Model, devType)
+			.setCharacteristic(Characteristic.SerialNumber, serial)
+			.setCharacteristic(Characteristic.FirmwareRevision, version);
 		this.informationService = informationService;
 		services.push(informationService);
 		

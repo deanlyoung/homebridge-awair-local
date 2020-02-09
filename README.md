@@ -1,4 +1,4 @@
-# homebridge-awair
+# homebridge-awair-local
 Awair plugin for homebridge: https://github.com/nfarina/homebridge
 
 Based on the great work of [@henrypoydar](https://github.com/henrypoydar).
