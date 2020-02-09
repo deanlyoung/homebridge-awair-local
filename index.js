@@ -23,10 +23,10 @@ function AwairLocal(log, config) {
 	this.limit = Number(config["limit"] || 12); // consecutive 10 second samples averaged (default: 12 x 10 = 120 seconds)
 	this.url = config["url"] || "http://" + this.ip + "/air-data/latest";
 	this.configUrl = config["url"] || "http://" + this.ip + "/settings/config/data";
-	this.devType = config["devType"] || "awair-omni";
-	this.model = "unknown";
-	this.serial = "unknown";
-	this.version = "unknown";
+	//this.devType = config["devType"] || "awair-omni";
+	//this.model = "unknown";
+	//this.serial = "unknown";
+	//this.version = "unknown";
 }
 
 AwairLocal.prototype = {
@@ -467,6 +467,37 @@ AwairLocal.prototype = {
 	
 	getServices: function() {
 		var services = [];
+		
+		var that = this;
+		
+		var configOptions = {
+			method: "GET",
+			uri: that.configUrl,
+			json: true
+		};
+		
+		if(that.logging){that.log("[" + that.ip + "] url: " + that.configUrl)};
+		
+		return request(configOptions)
+			.then(function(response) {
+				var configData = response;
+				
+				if(that.logging){that.log("[" + configData.wifi_mac + "] " + that.configUrl + ": " + JSON.stringify(configData))};
+				
+				var devUuid = configData.device_uuid;
+				
+				that.model = devUuid.split("_")[0];
+				that.devType = that.model;
+				that.serial = configData.wifi_mac;
+				that.version = configData.fw_version;
+			})
+			.catch(function(err) {
+				if(that.logging){that.log("[" + that.ip + "] " + err)};
+				
+				that.model = "unknown";
+				that.serial = "unknown";
+				that.version = "unknown";
+			});
 		
 		var informationService = new Service.AccessoryInformation();
 		informationService
