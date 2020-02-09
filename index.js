@@ -58,7 +58,7 @@ AwairLocal.prototype = {
 					that.airQualityService.linkedServices = [that.humidityService, that.temperatureService, that.carbonDioxideService];
 				}
 				
-				var temp = parseFloat(data[temp]);
+				var temp = parseFloat(data.temp);
 				var atmos = 1;
 				
 				if(that.logging){that.log("[" + that.serial + "] " + that.url + ": " + JSON.stringify(data) + ", score: " + score)};
