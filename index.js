@@ -43,6 +43,8 @@ Awair.prototype = {
 			.then(function(response) {
 				var data = response;
 				
+				var score = data.score;
+				
 				that.airQualityService
 					.setCharacteristic(Characteristic.AirQuality, that.convertScore(score));
 				that.airQualityService.isPrimaryService = true;
