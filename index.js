@@ -135,7 +135,7 @@ AwairLocal.prototype = {
 							break;
 						case "voc":
 							var voc = parseFloat(data[sensor]);
-							tvoc = that.convertChemicals(voc, atmos, temp);
+							var tvoc = that.convertChemicals(voc, atmos, temp);
 							if(that.logging){that.log("[" + that.serial + "]: voc (" + voc + " ppb) => tvoc (" + tvoc + " ug/m^3)")};
 							// Chemicals (ug/m^3)
 							that.airQualityService
