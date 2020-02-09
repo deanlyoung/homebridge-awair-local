@@ -486,7 +486,7 @@ AwairLocal.prototype = {
 				
 				var devUuid = configData.device_uuid;
 				
-				that.model = devUuid.split("_")[0];
+				that.model = devUuid;
 				that.devType = that.model;
 				that.serial = configData.wifi_mac;
 				that.version = configData.fw_version;
