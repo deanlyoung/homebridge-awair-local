@@ -23,43 +23,9 @@ function AwairLocal(log, config) {
 	this.limit = Number(config["limit"] || 12); // consecutive 10 second samples averaged (default: 12 x 10 = 120 seconds)
 	this.url = config["url"] || "http://" + this.ip + "/air-data/latest";
 	this.configUrl = config["url"] || "http://" + this.ip + "/settings/config/data";
-	
-	
 }
 
 AwairLocal.prototype = {
-	getConfig: function() {
-		var configOptions = {
-			method: "GET",
-			uri: this.configUrl,
-			json: true
-		};
-		
-		if(this.logging){this.log("[" + this.ip + "] url: " + this.url)};
-		
-		var that = this;
-		
-		return request(configOptions)
-			.then(function(response) {
-				var configData = response;
-				
-				var devUuid = configData.device_uuid;
-				
-				that.devType = config["devType"] || devUuid.split("_")[0];
-				that.devId = config["devId"] || devUuid.split("_")[1];
-				that.serial = config["serial"] || configData.wifi_mac;
-				that.version = config["version"] || configData.fw_version;
-			})
-			.catch(function(err) {
-				if(that.logging){that.log("[" + that.ip + "] " + err)};
-				that.informationService
-					.setCharacteristic(Characteristic.Manufacturer, "--")
-					.setCharacteristic(Characteristic.Model, "--")
-					.setCharacteristic(Characteristic.SerialNumber, "--")
-					.setCharacteristic(Characteristic.FirmwareRevision, "--");
-			});
-	},
-	
 	getData: function() {
 		var options = {
 			method: "GET",
@@ -497,6 +463,38 @@ AwairLocal.prototype = {
 	
 	getServices: function() {
 		var services = [];
+		
+		var configOptions = {
+			method: "GET",
+			uri: this.configUrl,
+			json: true
+		};
+		
+		if(this.logging){this.log("[" + this.ip + "] url: " + this.url)};
+		
+		var that = this;
+		
+		return request(configOptions)
+			.then(function(response) {
+				var configData = response;
+				
+				if(that.logging){that.log("[" + configData.wifi_mac + "] " + that.configUrl + ": " + JSON.stringify(configData))};
+				
+				var devUuid = configData.device_uuid;
+				
+				that.devType = devUuid.split("_")[0];
+				that.devId = devUuid.split("_")[1];
+				that.serial = configData.wifi_mac;
+				that.version = configData.fw_version;
+			})
+			.catch(function(err) {
+				if(that.logging){that.log("[" + that.ip + "] " + err)};
+				that.informationService
+					.setCharacteristic(Characteristic.Manufacturer, "--")
+					.setCharacteristic(Characteristic.Model, "--")
+					.setCharacteristic(Characteristic.SerialNumber, "--")
+					.setCharacteristic(Characteristic.FirmwareRevision, "--");
+		});
 		
 		var informationService = new Service.AccessoryInformation();
 		informationService
