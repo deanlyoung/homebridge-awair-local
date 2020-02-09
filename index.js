@@ -15,12 +15,12 @@ function AwairLocal(log, config) {
 	this.logging = config["logging"] || false;
 	this.ip = config["ip"];
 	this.manufacturer = config["manufacturer"] || "Awair";
-	this.carbonDioxideThreshold = Number(config["carbonDioxideThreshold"] || 0); // ppm, 0 = OFF
-	this.carbonDioxideThresholdOff = Number(config["carbonDioxideThresholdOff"] || config["carbonDioxideThreshold"]); // ppm, same as carbonDioxideThreshold by default, should be less than or equal to carbonDioxideThreshold
-	this.vocMW = Number(config["voc_mixture_mw"] || 72.66578273019740); // Molecular Weight (g/mol) of a reference VOC gas or mixture
+	this.carbonDioxideThreshold = Number(config["carbonDioxideThreshold"]) || 0; // ppm, 0 = OFF
+	this.carbonDioxideThresholdOff = Number(config["carbonDioxideThresholdOff"]) || Number(config["carbonDioxideThreshold"]); // ppm, same as carbonDioxideThreshold by default, should be less than or equal to carbonDioxideThreshold
+	this.vocMW = Number(config["voc_mixture_mw"]) || 72.66578273019740; // Molecular Weight (g/mol) of a reference VOC gas or mixture
 	this.airQualityMethod = config["air_quality_method"] || "awair-score"; // awair-score, aqi, nowcast-aqi
-	this.polling_interval = Number(config["polling_interval"] || 10); // seconds (default: 10 seconds)
-	this.limit = Number(config["limit"] || 12); // consecutive 10 second samples averaged (default: 12 x 10 = 120 seconds)
+	this.polling_interval = Number(config["polling_interval"]) || 10; // seconds (default: 10 seconds)
+	this.limit = Number(config["limit"]) || 12; // consecutive 10 second samples averaged (default: 12 x 10 = 120 seconds)
 	this.url = config["url"] || "http://" + this.ip + "/air-data/latest";
 	this.configUrl = config["url"] || "http://" + this.ip + "/settings/config/data";
 	//this.devType = config["devType"] || "awair-omni";
