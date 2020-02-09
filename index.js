@@ -470,13 +470,15 @@ AwairLocal.prototype = {
 			json: true
 		};
 		
-		if(this.logging){this.log("[" + this.ip + "] url: " + this.url)};
+		if(this.logging){this.log("[" + this.ip + "] url: " + this.configUrl)};
 		
 		return request(configOptions)
 			.then(function(response) {
 				var configData = response;
 				
-				if(this.logging){this.log("[" + configData.wifi_mac + "] " + this.configUrl + ": " + JSON.stringify(configData))};
+				var placeholder = JSON.stringify(configData);
+				
+				if(this.logging){this.log("[" + configData.wifi_mac + "] " + this.configUrl + ": " + "{{placeholder}}")};
 				
 				var devUuid = configData.device_uuid;
 				
