@@ -41,6 +41,7 @@ function AwairLocal(log, config) {
 			var devUuid = configData.device_uuid;
 			
 			this.model = devUuid.split("_")[0];
+			this.devType = this.model;
 			this.serial = configData.wifi_mac;
 			this.version = configData.fw_version;
 		})
