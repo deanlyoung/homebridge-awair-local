@@ -40,18 +40,16 @@ function AwairLocal(log, config) {
 			
 			var devUuid = configData.device_uuid;
 			
-			this.devType = devUuid.split("_")[0];
-			this.devId = devUuid.split("_")[1];
+			this.model = devUuid.split("_")[0];
 			this.serial = configData.wifi_mac;
 			this.version = configData.fw_version;
 		})
 		.catch(function(err) {
 			if(this.logging){this.log("[" + this.ip + "] " + err)};
-			that.informationService
-				.setCharacteristic(Characteristic.Manufacturer, "--")
-				.setCharacteristic(Characteristic.Model, "--")
-				.setCharacteristic(Characteristic.SerialNumber, "--")
-				.setCharacteristic(Characteristic.FirmwareRevision, "--");
+			
+			this.model = "unknown";
+			this.serial = "unknown";
+			this.version = "unknown";
 		});
 }
 
@@ -497,7 +495,7 @@ AwairLocal.prototype = {
 		var informationService = new Service.AccessoryInformation();
 		informationService
 			.setCharacteristic(Characteristic.Manufacturer, this.manufacturer)
-			.setCharacteristic(Characteristic.Model, this.devType)
+			.setCharacteristic(Characteristic.Model, this.model)
 			.setCharacteristic(Characteristic.SerialNumber, this.serial)
 			.setCharacteristic(Characteristic.FirmwareRevision, this.version);
 		this.informationService = informationService;
