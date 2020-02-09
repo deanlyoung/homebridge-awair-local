@@ -23,7 +23,7 @@ function AwairLocal(log, config) {
 	this.url = config["url"] || "http://" + this.ip + "/air-data/latest";
 	this.configUrl = config["url"] || "http://" + this.ip + "/settings/config/data";
 	this.manufacturer = config["manufacturer"] || "Awair";
-	this.model = config["model"] || model;
+	this.model = config["model"] ||  "unknown model";
 	this.serial = config["serial"] || "unknown serial";
 	this.version = config["version"] || "unknown version";
 }
