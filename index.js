@@ -24,6 +24,7 @@ function AwairLocal(log, config) {
 	this.configUrl = config["url"] || "http://" + this.ip + "/settings/config/data";
 	this.manufacturer = config["manufacturer"] || "Awair";
 	this.model = config["model"] ||  "unknown model";
+	this.devType = this.model;
 	this.serial = config["serial"] || "unknown serial";
 	this.version = config["version"] || "unknown version";
 }
@@ -139,7 +140,7 @@ AwairLocal.prototype = {
 							if(that.logging){that.log("[" + that.serial + "]: voc (" + voc + " ppb) => tvoc (" + tvoc + " ug/m^3)")};
 							// Chemicals (ug/m^3)
 							that.airQualityService
-								.setCharacteristic(Characteristic.VOCDensity, tvoc)
+								.setCharacteristic(Characteristic.VOCDensity, tvoc);
 							break;
 						case "pm25":
 							// PM2.5 (ug/m^3)
