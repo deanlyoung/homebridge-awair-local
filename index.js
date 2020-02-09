@@ -23,6 +23,36 @@ function AwairLocal(log, config) {
 	this.limit = Number(config["limit"] || 12); // consecutive 10 second samples averaged (default: 12 x 10 = 120 seconds)
 	this.url = config["url"] || "http://" + this.ip + "/air-data/latest";
 	this.configUrl = config["url"] || "http://" + this.ip + "/settings/config/data";
+	
+	var configOptions = {
+		method: "GET",
+		uri: this.configUrl,
+		json: true
+	};
+	
+	if(this.logging){this.log("[" + this.ip + "] url: " + this.configUrl)};
+	
+	return request(configOptions)
+		.then(function(response) {
+			var configData = response;
+			
+			if(this.logging){this.log("[" + configData.wifi_mac + "] " + this.configUrl + ": " + JSON.stringify(configData))};
+			
+			var devUuid = configData.device_uuid;
+			
+			this.devType = devUuid.split("_")[0];
+			this.devId = devUuid.split("_")[1];
+			this.serial = configData.wifi_mac;
+			this.version = configData.fw_version;
+		})
+		.catch(function(err) {
+			if(this.logging){this.log("[" + this.ip + "] " + err)};
+			that.informationService
+				.setCharacteristic(Characteristic.Manufacturer, "--")
+				.setCharacteristic(Characteristic.Model, "--")
+				.setCharacteristic(Characteristic.SerialNumber, "--")
+				.setCharacteristic(Characteristic.FirmwareRevision, "--");
+		});
 }
 
 AwairLocal.prototype = {
@@ -464,47 +494,12 @@ AwairLocal.prototype = {
 	getServices: function() {
 		var services = [];
 		
-		var devType;
-		var devId;
-		var serial;
-		var version;
-		
-		var configOptions = {
-			method: "GET",
-			uri: this.configUrl,
-			json: true
-		};
-		
-		if(this.logging){this.log("[" + this.ip + "] url: " + this.configUrl)};
-		
-		return request(configOptions)
-			.then(function(response) {
-				var configData = response;
-				
-				if(this.logging){this.log("[" + configData.wifi_mac + "] " + this.configUrl + ": " + JSON.stringify(configData))};
-				
-				var devUuid = configData.device_uuid;
-				
-				devType = devUuid.split("_")[0];
-				devId = devUuid.split("_")[1];
-				serial = configData.wifi_mac;
-				version = configData.fw_version;
-			})
-			.catch(function(err) {
-				if(this.logging){this.log("[" + this.ip + "] " + err)};
-				that.informationService
-					.setCharacteristic(Characteristic.Manufacturer, "--")
-					.setCharacteristic(Characteristic.Model, "--")
-					.setCharacteristic(Characteristic.SerialNumber, "--")
-					.setCharacteristic(Characteristic.FirmwareRevision, "--");
-			});
-		
 		var informationService = new Service.AccessoryInformation();
 		informationService
 			.setCharacteristic(Characteristic.Manufacturer, this.manufacturer)
-			.setCharacteristic(Characteristic.Model, devType)
-			.setCharacteristic(Characteristic.SerialNumber, serial)
-			.setCharacteristic(Characteristic.FirmwareRevision, version);
+			.setCharacteristic(Characteristic.Model, this.devType)
+			.setCharacteristic(Characteristic.SerialNumber, this.serial)
+			.setCharacteristic(Characteristic.FirmwareRevision, this.version);
 		this.informationService = informationService;
 		services.push(informationService);
 		
