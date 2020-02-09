@@ -27,7 +27,7 @@ function AwairLocal(log, config) {
 	this.url = config["url"] || "http://" + this.ip + "/air-data/latest";
 }
 
-Awair.prototype = {
+AwairLocal.prototype = {
 	getData: function() {
 		var options = {
 			method: "GET",
