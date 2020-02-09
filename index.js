@@ -15,7 +15,7 @@ function AwairLocal(log, config) {
 	this.logging = config["logging"] || false;
 	this.ip = config["ip"];
 	this.carbonDioxideThreshold = Number(config["carbonDioxideThreshold"]) || 0; // ppm, 0 = OFF
-	this.carbonDioxideThresholdOff = Number(config["carbonDioxideThresholdOff"]) || Number(config["carbonDioxideThreshold"]); // ppm, same as carbonDioxideThreshold by default, should be less than or equal to carbonDioxideThreshold
+	this.carbonDioxideThresholdOff = Number(config["carbonDioxideThresholdOff"]) || Number(this.carbonDioxideThreshold); // ppm, same as carbonDioxideThreshold by default, should be less than or equal to carbonDioxideThreshold
 	this.vocMW = Number(config["voc_mixture_mw"]) || 72.66578273019740; // Molecular Weight (g/mol) of a reference VOC gas or mixture
 	this.airQualityMethod = config["air_quality_method"] || "awair-score"; // awair-score, aqi, nowcast-aqi
 	this.polling_interval = Number(config["polling_interval"]) || 10; // seconds (default: 10 seconds)
