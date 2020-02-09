@@ -472,23 +472,21 @@ AwairLocal.prototype = {
 		
 		if(this.logging){this.log("[" + this.ip + "] url: " + this.url)};
 		
-		var that = this;
-		
 		return request(configOptions)
 			.then(function(response) {
 				var configData = response;
 				
-				if(that.logging){that.log("[" + configData.wifi_mac + "] " + that.configUrl + ": " + JSON.stringify(configData))};
+				if(this.logging){this.log("[" + configData.wifi_mac + "] " + this.configUrl + ": " + JSON.stringify(configData))};
 				
 				var devUuid = configData.device_uuid;
 				
-				that.devType = devUuid.split("_")[0];
-				that.devId = devUuid.split("_")[1];
-				that.serial = configData.wifi_mac;
-				that.version = configData.fw_version;
+				this.devType = devUuid.split("_")[0];
+				this.devId = devUuid.split("_")[1];
+				this.serial = configData.wifi_mac;
+				this.version = configData.fw_version;
 			})
 			.catch(function(err) {
-				if(that.logging){that.log("[" + that.ip + "] " + err)};
+				if(this.logging){this.log("[" + this.ip + "] " + err)};
 				that.informationService
 					.setCharacteristic(Characteristic.Manufacturer, "--")
 					.setCharacteristic(Characteristic.Model, "--")
