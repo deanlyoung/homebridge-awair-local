@@ -24,6 +24,10 @@ function AwairLocal(log, config) {
 	this.url = config["url"] || "http://" + this.ip + "/air-data/latest";
 	this.configUrl = config["url"] || "http://" + this.ip + "/settings/config/data";
 	
+	
+}
+
+AwairLocal.prototype = {
 	getConfig: function() {
 		var configOptions = {
 			method: "GET",
@@ -54,10 +58,8 @@ function AwairLocal(log, config) {
 					.setCharacteristic(Characteristic.SerialNumber, "--")
 					.setCharacteristic(Characteristic.FirmwareRevision, "--");
 			});
-	}
-}
-
-AwairLocal.prototype = {
+	},
+	
 	getData: function() {
 		var options = {
 			method: "GET",
