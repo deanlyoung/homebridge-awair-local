@@ -23,35 +23,10 @@ function AwairLocal(log, config) {
 	this.limit = Number(config["limit"] || 12); // consecutive 10 second samples averaged (default: 12 x 10 = 120 seconds)
 	this.url = config["url"] || "http://" + this.ip + "/air-data/latest";
 	this.configUrl = config["url"] || "http://" + this.ip + "/settings/config/data";
-	
-	var configOptions = {
-		method: "GET",
-		uri: this.configUrl,
-		json: true
-	};
-	
-	if(this.logging){this.log("[" + this.ip + "] url: " + this.configUrl)};
-	
-	return request(configOptions)
-		.then(function(response) {
-			var configData = response;
-			
-			if(this.logging){this.log("[" + configData.wifi_mac + "] " + this.configUrl + ": " + JSON.stringify(configData))};
-			
-			var devUuid = configData.device_uuid;
-			
-			this.model = devUuid.split("_")[0];
-			this.devType = this.model;
-			this.serial = configData.wifi_mac;
-			this.version = configData.fw_version;
-		})
-		.catch(function(err) {
-			if(this.logging){this.log("[" + this.ip + "] " + err)};
-			
-			this.model = "unknown";
-			this.serial = "unknown";
-			this.version = "unknown";
-		});
+	this.devType = config["devType"] || "awair-omni";
+	this.model = "unknown";
+	this.serial = "unknown";
+	this.version = "unknown";
 }
 
 AwairLocal.prototype = {
