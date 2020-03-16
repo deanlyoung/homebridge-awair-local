@@ -79,7 +79,7 @@ AwairLocal.prototype = {
 							break;
 						case "co2":
 							// Carbon Dioxide (ppm)
-							var co2 = sensors[sensor];
+							var co2 = parseFloat(data[sensor]);
 							var co2Detected;
 							
 							var co2Before = that.carbonDioxideService.getCharacteristic(Characteristic.CarbonDioxideDetected).value;
