@@ -1,6 +1,6 @@
 {
 	"name": "homebridge-awair-local",
-	"version": "1.1.1",
+	"version": "1.1.2",
 	"description": "Awair Local accessory plugin for homebridge: https://github.com/nfarina/homebridge",
 	"main": "index.js",
 	"keywords": [
