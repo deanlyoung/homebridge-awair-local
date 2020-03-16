@@ -17,9 +17,9 @@ It will get new data once every 10 seconds (default), but it can be customized i
 
 You'll need to request permission to use the "Local Sensors" feature by emailing: developer [at] getawair [dot] com
 
-Once the feature is enabled, visit the IP Address of your device (found in your router settings). From this page, you can find 2 endpoints:
-- `http://X.X.X.X/air-data/latest` (every time you refresh this page, the latest sensor values that are available will be presented)
-- `http://X.X.X.X/settings/config/data` (this page displays device settings, such as `device_uuid`) For example (an Omni):
+- Once the feature is enabled, visit the IP Address of your device (found in your router settings). From this page, you can find 2 endpoints:
+- `http://X.Y.Z.W/air-data/latest` (every time you refresh this page, the latest sensor values that are available will be presented)
+- `http://X.Y.Z.W/settings/config/data` (this page displays device settings, such as `device_uuid`) For example (an Omni):
 
 ```
 {"device_uuid":"awair-omni_123","wifi_mac":"70:88:6B:12:XX:XX","ip":"192.168.1.X","netmask":"192.168.1.254","gateway":"255.255.255.0","fw_version":"1.1.6","timezone":"America/Los_Angeles","display":"score","led": {"mode":"auto","brightness":20},"power-status": {"battery":99,"plugged":true}}
@@ -30,7 +30,7 @@ Once the feature is enabled, visit the IP Address of your device (found in your 
 
 Configuration sample:
 
-Add the following information to your config file (note: shown with (1) example device: Awair 2nd Edition).
+Add the following information to your config file (note: shown with (1) example device: Awair).
 
 See [config-sample.json](https://github.com/deanlyoung/homebridge-awair-local/blob/master/config-sample.json)
 
@@ -41,28 +41,41 @@ See [config-sample.json](https://github.com/deanlyoung/homebridge-awair-local/bl
 		"accessory": "Awair",
 		"name": "Example Room 1 Awair",
 		"ip": "X.X.X.X",
-		"polling_interval": 10
+		"manufacturer": "Awair",
+		"devType": "awair",
+		"devId": "123",
+		"serial": "example-serial_123",
+		"model": "Awair",
+		"carbonDioxideThreshold": 1200,
+		"carbonDioxideThresholdOff": 1200,
+		"voc_mixture_mw": 72.66578273019740,
+		"air_quality_method": "awair-score",
+		"polling_interval": 10,
+		"limit": 12,
+		"logging": false
 	}
 ]
 ```
 
 ## Descriptions
 ```
-	     `accessory`	=> The Homebridge Accessory (REQUIRED, must be exactly: `AwairLocal`)
+	     `accessory`	=> The Homebridge Accessory (REQUIRED, must be exactly: `Awair`)
 		  `name`	=> The accessory name that appears by default in HomeKit (REQUIRED, can be anything)
-		 `ip`	=> The IP Address of your Awair device on your local network, for example: 192.168.1.2 or 10.0.1.2, so it is recommended that you assign a DHCP Reservation to your device. (REQUIRED)
+		 `token`	=> Developer Token (REQUIRED, see [Installation](#installation))
 	  `manufacturer`	=> Manufacturer (OPTIONAL, default = `Awair`)
-		`serial`	=> Serial Number (OPTIONAL, automatically captured from "/settings/config/data")
-		 `model`	=> Device Model (OPTIONAL, automatically captured from "/settings/config/data")
-	   `version`	=> Firmware Version (OPTIONAL, automatically captured from "/settings/config/data")
+	       `devType`	=> Device Type (REQUIRED, options: `awair`, `awair-glow`, `awair-mint`, `awair-omni`, or `awair-r2`)
+		 `devId`	=> Device ID (REQUIRED, see [Installation](#installation))
+		`serial`	=> Serial Number (OPTIONAL, default = `devType_devId`, options: `mac-address` or `devType_devId`)
+		 `model`	=> Device Model (OPTIONAL, default = `devType`, options: `Awair`, `Awair Glow`, `Awair Mint`, `Awair Omni`, `Awair 2nd Edition`)
 `carbonDioxideThreshold`	=> (OPTIONAL, default = `0` [i.e. OFF], the level at which HomeKit will trigger an alert for the CO2 in ppm)
 `carbonDioxideThresholdOff`	=> (OPTIONAL, default = `0` [i.e. `carbonDioxideThreshold`], the level at which HomeKit will turn off the trigger alert for the CO2 in ppm, to ensure that it doesn't trigger on/off too frequently choose a number lower than `carbonDioxideThreshold`)
 	`voc_mixture_mw`	=> The Molecular Weight (g/mol) of a reference gas or mixture that you use to convert from ppb to ug/m^3 (OPTIONAL, default = `72.66578273019740`)
     `air_quality_method`	=> Air quality calculation method used to define the Air Quality Chracteristic (OPTIONAL, default = `awair-score`, options: `awair-score`, `aqi`, `nowcast-aqi`)
-	       `polling`	=> The frequency (OPTIONAL, default = `10` (10 seconds), units: seconds, that you would like to update the data in HomeKit)
-		 `limit`	=> Number of consecutive 10 second data points used for custom averaging of sensor values (OPTIONAL, default = `12` i.e. 2 minute average)
-		   `url`	=> The Awair url to poll (OPTIONAL, EDITING NOT RECOMMENDED)
-	 `configUrl`	=> The Awair Config url to poll (OPTIONAL, EDITING NOT RECOMMENDED)
+	      `endpoint`	=> The `/air-data` endpoint to use (OPTIONAL, default = `15-min-avg`, options: `15-min-avg`, `5-min-avg`, `raw`, or `latest`)
+	       `polling`	=> The frequency (OPTIONAL, default = `900` (15 minutes), units: seconds, that you would like to update the data in HomeKit)
+	      `userType`	=> The type of user account (OPTIONAL, default = `users/self`, options: `users/self` or `orgs/###`, where ### is the Awair Organization `orgId`)
+		 `limit`	=> Number of consecutive 10 second data points returned per request, used for custom averaging of sensor values from `/raw` endpoint (OPTIONAL, default = `12` i.e. 2 minute average)
+		   `url`	=> The Awair url to poll (OPTIONAL, default = `http://developer-apis.awair.is/v1/users/self/devices/:device_type/:device_id/air-data/:endpoint?limit=:limit&desc=true`, EDITING NOT RECOMMENDED)
 	       `logging`	=> Whether to output logs to the Homebridge logs (OPTIONAL, default = `false`)
 ```
 
@@ -72,7 +85,7 @@ See response.sample.json
 
 # Resources
 
-- Awair: https://getawair.com/
+- Awair API: https://docs.developer.getawair.com/
 - Homebridge: https://github.com/nfarina/homebridge
 - Homebridge plugin development: http://blog.theodo.fr/2017/08/make-siri-perfect-home-companion-devices-not-supported-apple-homekit/
 - List of Services and conventions: https://github.com/KhaosT/HAP-NodeJS/blob/master/lib/gen/HomeKitTypes.js
