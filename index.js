@@ -198,7 +198,7 @@ AwairLocal.prototype = {
 		switch (method) {
 			case "awair-score":
 				var score = parseFloat(score);
-				if (score >= 90) {w
+				if (score >= 90) {
 					return 1; // EXCELLENT
 				} else if (score >= 80 && score < 90) {
 					return 2; // GOOD
