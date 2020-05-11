@@ -15,7 +15,7 @@ It will get new data once every 10 seconds (default), but it can be customized i
 2. Install this plugin using: `[sudo] npm install -g homebridge-awair-local`
 3. Update your configuration file. See the sample below.
 
-You'll need to request permission to use the "Local Sensors" feature by emailing: developer [at] getawair [dot] com
+You'll need to request permission to use the "Local Sensors" feature by emailing: developer [at] getawair [dot] com or filling out this Beta list form: https://forms.gle/DmRyqwSS23Wvm6zf6
 
 - Once the feature is enabled, visit the IP Address of your device (found in your router settings). From this page, you can find 2 endpoints:
 - `http://X.Y.Z.W/air-data/latest` (every time you refresh this page, the latest sensor values that are available will be presented)
