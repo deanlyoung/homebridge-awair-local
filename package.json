@@ -1,6 +1,6 @@
 {
 	"name": "homebridge-awair-local",
-	"version": "1.1.4",
+	"version": "1.2.0",
 	"description": "Awair Local accessory plugin for homebridge: https://github.com/nfarina/homebridge",
 	"main": "index.js",
 	"keywords": [
@@ -12,9 +12,11 @@
 		"carbon dioxide sensor",
 		"awair",
 		"awair glow",
+		"awair glow c",
 		"awair mint",
 		"awair omni",
-		"awair 2nd edition"
+		"awair 2nd edition",
+		"awair element"
 	],
 	"engines": {
 		"node": ">=6.0.0",
@@ -34,7 +36,6 @@
 	"homepage": "https://github.com/deanlyoung/homebridge-awair-local#readme",
 	"dependencies": {
 		"request": "2.88.0",
-		"request-promise": "4.2.2",
-		"aqi-bot": "1.1.4"
+		"request-promise": "4.2.2"
 	}
 }
