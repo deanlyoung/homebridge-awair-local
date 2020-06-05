@@ -3,7 +3,7 @@ Awair plugin for homebridge: https://github.com/nfarina/homebridge
 
 Based on the great work of [@henrypoydar](https://github.com/henrypoydar).
 
-This is a very basic plugin for Nfarina's amazing [Homebridge project](https://github.com/nfarina/homebridge). It will fetch current sensor conditions from an Awair device (e.g. Awair Glow C, Awair Mint, Awair Omni, Awair Element, or Awair 2nd Edition) and provide available sensor readings (e.g. temperature, humidity, carbon dioxide, TVOC, and PM2.5) information for HomeKit.
+This is a very basic plugin for Nfarina's amazing [Homebridge project](https://github.com/nfarina/homebridge). It will fetch current sensor conditions from an Awair device (e.g. Awair Mint, Awair Omni, Awair Element, or Awair 2nd Edition) and provide available sensor readings (e.g. temperature, humidity, carbon dioxide, TVOC, and PM2.5) information for HomeKit.
 
 You can look at the current Awair information via HomeKit enabled Apps on your iOS device or even ask Siri for them.
 
@@ -15,14 +15,15 @@ It will get new data once every 10 seconds (default), but it can be customized i
 2. Install this plugin using: `[sudo] npm install -g homebridge-awair-local`
 3. Update your configuration file. See the sample below.
 
-You'll need to request permission to use the "Local Sensors" feature by emailing: developer [at] getawair [dot] com or filling out this Beta list form: https://forms.gle/DmRyqwSS23Wvm6zf6
+~You'll need to request permission to use the "Local Sensors" feature by emailing: developer [at] getawair [dot] com or filling out this Beta list form: https://forms.gle/DmRyqwSS23Wvm6zf6~
+Filling out the form is no longer needed (unless you have an unsupported device_type). You can find this Beta feature in Device Settings (gear icon) > Developer Option > Enable Local Sensors of the Awair Home app. (note: even though the button will return to "blue" if you return, the feature should still be enabled, unless you Factory Reset the device.)
 
 - Once the feature is enabled, visit the IP Address of your device (found in your router settings). From this page, you can find 2 endpoints:
 - `http://X.Y.Z.W/air-data/latest` (every time you refresh this page, the latest sensor values that are available will be presented)
 - `http://X.Y.Z.W/settings/config/data` (this page displays device settings, such as `device_uuid`) For example (an Omni):
 
 ```
-{"device_uuid":"awair-omni_123","wifi_mac":"70:88:6B:12:XX:XX","ip":"192.168.1.X","netmask":"192.168.1.254","gateway":"255.255.255.0","fw_version":"1.1.6","timezone":"America/Los_Angeles","display":"score","led": {"mode":"auto","brightness":20},"power-status": {"battery":99,"plugged":true}}
+{"device_uuid":"awair-omni_123","wifi_mac":"70:88:6B:12:XX:XX","ip":"192.168.1.X","netmask":"255.255.255.0","gateway":"192.168.1.254","fw_version":"1.1.9","timezone":"America/Los_Angeles","display":"score","led": {"mode":"auto","brightness":20},"power-status": {"battery":99,"plugged":true}}
 ```
 
 
