@@ -10,7 +10,7 @@
 	
 	"accessories": [
 		{
-			"accessory": "Awair",
+			"accessory": "AwairLocal",
 			"name": "Example Room 1 Awair",
 			"ip": "X.X.X.X",
 			"manufacturer": "Awair",
