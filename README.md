@@ -39,7 +39,7 @@ See [config-sample.json](https://github.com/deanlyoung/homebridge-awair-local/bl
 ```
 "accessories": [
 	{
-		"accessory": "Awair",
+		"accessory": "AwairLocal",
 		"name": "Example Room 1 Awair",
 		"ip": "X.X.X.X",
 		"manufacturer": "Awair",
@@ -60,7 +60,7 @@ See [config-sample.json](https://github.com/deanlyoung/homebridge-awair-local/bl
 
 ## Descriptions
 ```
-	     `accessory`	=> The Homebridge Accessory (REQUIRED, must be exactly: `Awair`)
+	     `accessory`	=> The Homebridge Accessory (REQUIRED, must be exactly: `AwairLocal`)
 		  `name`	=> The accessory name that appears by default in HomeKit (REQUIRED, can be anything)
 		 `token`	=> Developer Token (REQUIRED, see [Installation](#installation))
 	  `manufacturer`	=> Manufacturer (OPTIONAL, default = `Awair`)
