@@ -82,7 +82,10 @@ See [config-sample.json](https://github.com/deanlyoung/homebridge-awair-local/bl
 
 # API Response
 
-See response.sample.json
+See response.omni.sample.json
+	response.element.sample.json
+	response.2nd-edition.sample.json
+	response.mint.sample.json
 
 # Resources
 

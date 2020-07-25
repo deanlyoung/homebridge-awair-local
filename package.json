@@ -1,6 +1,6 @@
 {
 	"name": "homebridge-awair-local",
-	"version": "1.2.4",
+	"version": "1.2.5",
 	"description": "Awair Local accessory plugin for homebridge: https://github.com/nfarina/homebridge",
 	"main": "index.js",
 	"keywords": [
@@ -10,9 +10,6 @@
 		"temperature sensor",
 		"humidity sensor",
 		"carbon dioxide sensor",
-		"awair",
-		"awair glow",
-		"awair glow c",
 		"awair mint",
 		"awair omni",
 		"awair 2nd edition",
