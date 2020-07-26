@@ -13,17 +13,16 @@ function AwairLocal(log, config) {
 	this.log = log;
 	this.logging = config["logging"] || false; // true || false (default: false = OFF)
 	this.logging_level = config["logging_level"] || 0; // 0, 1, 2, 3, ... (default: 0 = OFF)
-	this.ip = config["ip"];
 	this.carbonDioxideThreshold = Number(config["carbonDioxideThreshold"]) || 0; // ppm, 0 = OFF
 	this.carbonDioxideThresholdOff = Number(config["carbonDioxideThresholdOff"]) || Number(this.carbonDioxideThreshold); // ppm, same as carbonDioxideThreshold by default, should be less than or equal to carbonDioxideThreshold
 	this.vocMW = Number(config["voc_mixture_mw"]) || 72.66578273019740; // Molecular Weight (g/mol) of a reference VOC gas or mixture
 	this.airQualityMethod = config["air_quality_method"] || "awair-score"; // awair-score, awair-aqi
 	this.polling_interval = Number(config["polling_interval"]) || 10; // seconds (default: 10 seconds)
-	this.limit = Number(config["limit"]) || 1; // consecutive 10 second samples averaged (default: 12 x 10 = 120 seconds)
+	this.limit = Number(config["limit"]) || 1; // consecutive 10 second samples averaged (default: 1 x 10 = 10 seconds)
 	this.url = config["url"] || "http://" + this.ip + "/air-data/latest";
 	this.configUrl = config["url"] || "http://" + this.ip + "/settings/config/data";
 	this.manufacturer = config["manufacturer"] || "Awair";
-	this.model = config["model"] ||  "unknown model";
+	this.model = config["model"] ||  "unknown model"; // awair-mint, awair-omni, awair-element, awair-r2
 	this.devType = this.model;
 	this.serial = config["serial"] || "unknown serial";
 	this.version = config["version"] || "unknown version";
@@ -58,8 +57,6 @@ AwairLocal.prototype = {
 				that.airQualityService.isPrimaryService = true;
 				if (that.devType == "awair-mint") {
 					that.airQualityService.linkedServices = [that.humidityService, that.temperatureService, that.lightLevelService];
-				} else if (that.devType == "awair-glow-c") {
-					that.airQualityService.linkedServices = [that.humidityService, that.temperatureService];
 				} else if (that.devType == "awair-omni") {
 					that.airQualityService.linkedServices = [that.humidityService, that.temperatureService, that.carbonDioxideService, that.lightLevelService];
 				} else {
@@ -73,6 +70,11 @@ AwairLocal.prototype = {
 				
 				for (var sensor in data) {
 					switch (sensor) {
+						case "dew_point":
+							// Dew Point (C)
+							// TODO: replace with a HomeKit service
+							if(that.logging || that.logging_level > 2){that.log("[" + that.serial + "] ignoring " + JSON.stringify(sensor) + ": " + parseFloat(data[sensor]))};
+							break;
 						case "temp":
 							// Temperature (C)
 							that.temperatureService
@@ -82,6 +84,11 @@ AwairLocal.prototype = {
 							// Humidity (%)
 							that.humidityService
 								.setCharacteristic(Characteristic.CurrentRelativeHumidity, parseFloat(data[sensor]))
+							break;
+						case "abs_humid":
+							// Absolute Humidity (mg/L)
+							// TODO: replace with a HomeKit service
+							if(that.logging || that.logging_level > 2){that.log("[" + that.serial + "] ignoring " + JSON.stringify(sensor) + ": " + parseFloat(data[sensor]))};
 							break;
 						case "co2":
 							// Carbon Dioxide (ppm)
@@ -132,6 +139,11 @@ AwairLocal.prototype = {
 								if(that.logging || that.logging_level > 2){that.log("Carbon Dioxide state unknown.")};
 							}
 							break;
+						case "co2_est":
+							// Estimated CO2 (ppm)
+							// TODO: replace with a HomeKit service (specifically for Awair Mint)
+							if(that.logging || that.logging_level > 2){that.log("[" + that.serial + "] ignoring " + JSON.stringify(sensor) + ": " + parseFloat(data[sensor]))};
+							break;
 						case "voc":
 							var voc = parseFloat(data[sensor]);
 							var tvoc = that.convertChemicals(voc, atmos, temp);
@@ -145,6 +157,11 @@ AwairLocal.prototype = {
 							that.airQualityService
 								.setCharacteristic(Characteristic.PM2_5Density, parseFloat(data[sensor]));
 							break;
+						case "pm10_est":
+							// PM10 (ug/m^3) - estimated
+							that.airQualityService
+								.setCharacteristic(Characteristic.PM10Density, parseFloat(data[sensor]));
+								break;
 						case "lux":
 							// Light (lux)
 							that.lightLevelService
@@ -167,7 +184,7 @@ AwairLocal.prototype = {
 					.setCharacteristic(Characteristic.CurrentTemperature, "--")
 				that.humidityService
 					.setCharacteristic(Characteristic.CurrentRelativeHumidity, "--")
-				if (that.devType != "awair-mint" && that.devType != "awair-glow-c") {
+				if (that.devType != "awair-mint") {
 					that.carbonDioxideService
 						.setCharacteristic(Characteristic.CarbonDioxideLevel, "--")
 						.setCharacteristic(Characteristic.CarbonDioxideDetected, "--")
@@ -281,6 +298,7 @@ AwairLocal.prototype = {
 			.setCharacteristic(Characteristic.AirQuality, "--")
 			.setCharacteristic(Characteristic.VOCDensity, "--")
 			.setCharacteristic(Characteristic.PM2_5Density, "--");
+			.setCharacteristic(Characteristic.PM10Density, "--");
 		airQualityService
 			.getCharacteristic(Characteristic.VOCDensity)
 			.setProps({
@@ -308,7 +326,7 @@ AwairLocal.prototype = {
 		this.humidityService = humidityService;
 		services.push(humidityService);
 		
-		if (this.devType != "awair-mint" && this.devType != "awair-glow-c") {
+		if (this.devType != "awair-mint") {
 			var carbonDioxideService = new Service.CarbonDioxideSensor();
 			carbonDioxideService
 				.setCharacteristic(Characteristic.CarbonDioxideLevel, "--");
@@ -340,7 +358,7 @@ AwairLocal.prototype = {
 			if(this.logging || this.logging_level > 0){this.log("[" + this.serial + "] no polling_interval set, defaulting to " + this.polling_interval)};
 			this.timer = setInterval(
 				this.getData.bind(this),
-				900000
+				this.polling_interval * 1000
 			);
 		}
 		

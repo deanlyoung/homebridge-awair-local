@@ -17,7 +17,7 @@
 				"title": "IP Address (REQUIRED)",
 				"type": "string",
 				"placeholder": "0.0.0.0",
-				"description": "The IP address of your device on the LAN. Can also be the mDNS address for supported devices."
+				"description": "The IP address of your device on the LAN. Can also be the mDNS .local address for supported devices (do not include http://)."
 			},
 			"model": {
 				"title": "Device Model (REQUIRED)",
