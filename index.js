@@ -13,6 +13,7 @@ function AwairLocal(log, config) {
 	this.log = log;
 	this.logging = config["logging"] || false; // true || false (default: false = OFF)
 	this.logging_level = config["logging_level"] || 0; // 0, 1, 2, 3, ... (default: 0 = OFF)
+	this.ip = config["ip"]; // can also be mDNS .local address (without http://)
 	this.carbonDioxideThreshold = Number(config["carbonDioxideThreshold"]) || 0; // ppm, 0 = OFF
 	this.carbonDioxideThresholdOff = Number(config["carbonDioxideThresholdOff"]) || Number(this.carbonDioxideThreshold); // ppm, same as carbonDioxideThreshold by default, should be less than or equal to carbonDioxideThreshold
 	this.vocMW = Number(config["voc_mixture_mw"]) || 72.66578273019740; // Molecular Weight (g/mol) of a reference VOC gas or mixture
