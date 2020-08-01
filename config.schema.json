@@ -1,8 +1,8 @@
 {
-	"pluginAlias": "Awair",
+	"pluginAlias": "AwairLocal",
 	"pluginType": "accessory",
 	"singular": false,
-	"headerDisplay": "Awair plug-in for [Homebridge](https://github.com/nfarina/homebridge) using the native Awair API. Reference [Installation Instructions](https://github.com/deanlyoung/homebridge-awair#readme) for details on determining 'Developer Token' and 'Device ID'.",
+	"headerDisplay": "Awair plug-in for [Homebridge](https://github.com/nfarina/homebridge) using the native Awair API. Reference [Installation Instructions](https://github.com/deanlyoung/homebridge-awair-local#readme) for details on determining 'Developer Token' and 'Device ID'.",
 	"footerDisplay": "If you have multiple Awair devices, use those IDs to create individual accessories. Be sure to uniquely 'name' each device.",
 	"schema": {
 		"type": "object",
