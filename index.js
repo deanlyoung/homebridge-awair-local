@@ -298,7 +298,7 @@ AwairLocal.prototype = {
 		airQualityService
 			.setCharacteristic(Characteristic.AirQuality, "--")
 			.setCharacteristic(Characteristic.VOCDensity, "--")
-			.setCharacteristic(Characteristic.PM2_5Density, "--");
+			.setCharacteristic(Characteristic.PM2_5Density, "--")
 			.setCharacteristic(Characteristic.PM10Density, "--");
 		airQualityService
 			.getCharacteristic(Characteristic.VOCDensity)
