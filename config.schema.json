@@ -70,7 +70,7 @@
 				"placeholder": "awair-score",
 				"description": "Air quality calculation method used to define the Air Quality Chracteristic. Default = `awair-score`, Options: 'awair-score' and `awair-aqi`.",
 				"typeahead": {
-					"source": ["awair-score", "awair-aqi"]
+					"source": ["awair-score", "awair-aqi", "awair-pm25"]
 				}
 			},
 			"polling_interval": {
