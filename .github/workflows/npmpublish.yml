@@ -12,15 +12,19 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
           node-version: 12
-      - uses: phips28/gh-action-bump-version@v8.0.18
+      - name: "Automated Version Bump"
+        id: version-bump
+        uses: phips28/gh-action-bump-version@v8.0.18
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           minor-wording: feat,minor,feature
           major-wording: BREAKING CHANGE,major
-          patch-wording: bump,patch
+          patch-wording: bump,patch,try,fix,edit
       - run: npm ci
       - run: npm test
 
