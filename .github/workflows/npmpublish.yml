@@ -16,6 +16,11 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12
+      - uses: phips28/gh-action-bump-version@v8.0.18
+        with:
+          minor-wording: feat,minor,feature
+          major-wording: BREAKING CHANGE,major
+          patch-wording: bump,patch
       - run: npm ci
       - run: npm test
 
