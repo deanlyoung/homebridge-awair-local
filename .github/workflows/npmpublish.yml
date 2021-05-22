@@ -9,22 +9,60 @@ on:
       - master
 
 jobs:
+  setup:
+    runs-on: ubuntu-20.04
+    name: Setup
+    steps:
+      - name: git checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Get changed files
+        id: changed_files
+        if: github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'dependabot')
+        uses: lots0logs/gh-action-get-changed-files@2.1.4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check modified files
+        id: check_modified
+        if: github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'dependabot')
+        run: |
+          echo "::set-output name=version_modified::$(jq '. | contains(["actions-runner/VERSION"])' ${HOME}/files_modified.json)"
+
+      - name: Increment version and changelog
+        if: ${{ !steps.check_modified.outputs.version_modified && github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'dependabot') }}
+        run: |
+          SEM_VER=$(cat VERSION | awk -F. -v OFS=. 'NF==1{print ++$NF}; NF>1{if(length($NF+1)>length($NF))$(NF-1)++; $NF=sprintf("%0*d", length($NF), ($NF+1)%(10^length($NF))); print}')
+          COMMIT_MSG=$(git log --format=%B -n 1 ${{ github.event.after }})
+
+          # Write files
+          echo $SEM_VER > VERSION
+          sed -i "12i ## [${SEM_VER}]\n### Changed\n* ${COMMIT_MSG}" CHANGELOG.md
+
+          # Add new git commit
+          git add VERSION
+          git add CHANGELOG.md
+          git config --global user.name "dependabot[bot]"
+          git config --global user.email "dependabot[bot]@users.noreply.github.com"
+          git commit -m "[Automated] Increment Version"
+        working-directory: actions-runner
+
+      - name: Push increment version commit
+        if: ${{ !steps.check_modified.outputs.version_modified && github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'dependabot') }}
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.head_ref }}
+  
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v1
       - uses: actions/setup-node@v1
         with:
           node-version: 12
-      - name: "Automated Version Bump"
-        id: version-bump
-        uses: phips28/gh-action-bump-version@v8.0.18
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          minor-wording: feat,minor,feature
-          major-wording: BREAKING CHANGE,major
-          patch-wording: bump,patch,try,fix,edit
       - run: npm ci
       - run: npm test
 
