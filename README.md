@@ -42,11 +42,9 @@ See [config-sample.json](https://github.com/deanlyoung/homebridge-awair-local/bl
 		"accessory": "AwairLocal",
 		"name": "Example Room 1 Awair",
 		"ip": "X.X.X.X",
+		"model": "awair-element",
 		"manufacturer": "Awair",
-		"devType": "awair",
-		"devId": "123",
 		"serial": "example-serial_123",
-		"model": "Awair",
 		"carbonDioxideThreshold": 1200,
 		"carbonDioxideThresholdOff": 1000,
 		"voc_mixture_mw": 72.66578273019740,
@@ -62,16 +60,16 @@ See [config-sample.json](https://github.com/deanlyoung/homebridge-awair-local/bl
 ```
 	     `accessory`	=> The Homebridge Accessory (REQUIRED, must be exactly: `AwairLocal`)
 		  `name`	=> The accessory name that appears by default in HomeKit (REQUIRED, can be anything)
-		 	`ip`	=> The IP address or mDNS .local address (without http://) of the device on your network (REQUIRED)
-	  `manufacturer`	=> Manufacturer (OPTIONAL, default = `Awair`)
-	       `devType`	=> Device Type (REQUIRED, options: `awair-element`, `awair-mint`, `awair-omni`, or `awair-r2`)
-		`serial`	=> Serial Number (OPTIONAL, default = `devType_devId`, options: `mac-address` or `devType_devId`)
+		    `ip`	=> The IP address or mDNS .local address (without http://) of the device on your network (REQUIRED)
 		 `model`	=> Device Model (OPTIONAL, default = `devType`, options: `Awair`, `Awair Glow`, `Awair Glow C`, `Awair Element`, `Awair Mint`, `Awair Omni`, `Awair 2nd Edition`)
+	  `manufacturer`	=> Manufacturer (OPTIONAL, default = `Awair`)
+		`serial`	=> Serial Number (OPTIONAL, default = `devType_devId`, options: `mac-address` or `devType_devId`)
+
 `carbonDioxideThreshold`	=> (OPTIONAL, default = `0` [i.e. OFF], the level at which HomeKit will trigger an alert for the CO2 in ppm)
 `carbonDioxideThresholdOff`	=> (OPTIONAL, default = `0` [i.e. `carbonDioxideThreshold`], the level at which HomeKit will turn off the trigger alert for the CO2 in ppm, to ensure that it doesn't trigger on/off too frequently choose a number lower than `carbonDioxideThreshold`)
 	`voc_mixture_mw`	=> The Molecular Weight (g/mol) of a reference gas or mixture that you use to convert from ppb to ug/m^3 (OPTIONAL, default = `72.66578273019740`)
     `air_quality_method`	=> Air quality calculation method used to define the Air Quality Chracteristic (OPTIONAL, default = `awair-score`, options: `awair-score`, `awair-aqi`, `awair-pm25`)
-	       `polling`	=> The frequency (OPTIONAL, default = `10` (10 seconds), units: seconds, that you would like to update the data in HomeKit)
+      `polling_interval`	=> The frequency (OPTIONAL, default = `10` (10 seconds), units: seconds, that you would like to update the data in HomeKit)
 		   `url`	=> The Awair url to poll (OPTIONAL, default = `"http://" + this.ip + "/air-data/latest";`, EDITING NOT RECOMMENDED)
 	       `logging`	=> Whether to output logs to the Homebridge logs (OPTIONAL, default = `false`)
 ```
