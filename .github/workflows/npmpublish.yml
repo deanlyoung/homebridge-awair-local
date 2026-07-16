@@ -64,7 +64,8 @@ jobs:
         with:
           node-version: 24
       - run: npm ci
-      - run: npm test
+      - name: Run tests
+        run: npm test --if-present
 
   publish-npm:
     needs: build
