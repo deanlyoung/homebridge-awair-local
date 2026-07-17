@@ -1,6 +1,6 @@
 {
 	"name": "homebridge-awair-local",
-  "version": "2.0.0",
+  "version": "2.0.1",
 	"description": "Awair Local dynamic platform plugin for Homebridge v2",
 	"main": "index.js",
 	"keywords": [
