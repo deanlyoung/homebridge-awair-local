@@ -7,8 +7,6 @@ on:
   push:
     branches:
       - master
-    tags:
-      - 'v*'
 
 jobs:
   setup:
@@ -71,15 +69,41 @@ jobs:
 
   publish-npm:
     needs: build
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       id-token: write
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v6
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org/
-      - run: npm publish
+      - name: Create release tag
+        id: release_tag
+        run: |
+          VERSION="$(jq -r '.version' package.json)"
+          TAG="v${VERSION}"
+
+          if git rev-parse -q --verify "refs/tags/${TAG}" > /dev/null; then
+            TAG_COMMIT="$(git rev-list -n 1 "${TAG}")"
+            if [ "${TAG_COMMIT}" = "${GITHUB_SHA}" ]; then
+              echo "publish=false" >> "${GITHUB_OUTPUT}"
+              exit 0
+            fi
+
+            echo "Tag ${TAG} already exists for a different commit." >&2
+            exit 1
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "${TAG}" -m "Release ${VERSION}" "${GITHUB_SHA}"
+          git push origin "${TAG}"
+          echo "publish=true" >> "${GITHUB_OUTPUT}"
+      - name: Publish to npm
+        if: steps.release_tag.outputs.publish == 'true'
+        run: npm publish
