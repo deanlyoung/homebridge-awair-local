@@ -1,0 +1,25 @@
+<link rel="stylesheet" href="style.css">
+
+<main class="container-fluid py-3" id="app">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+      <h4 class="mb-1">Awair Local</h4>
+      <p class="text-muted mb-0">Discovered devices are editable. Save an entry to persist its name and settings.</p>
+    </div>
+    <button class="btn btn-primary" id="save" type="button">Save configuration</button>
+  </div>
+
+  <section class="card mb-3">
+    <div class="card-body row g-3 align-items-center">
+      <label class="col-sm-4 col-lg-3 form-check-label" for="discovery">Automatically discover Awairs</label>
+      <div class="col-sm-8 col-lg-9"><input class="form-check-input" id="discovery" type="checkbox"></div>
+      <label class="col-sm-4 col-lg-3 form-check-label" for="subnetDiscovery">Fallback local-network discovery</label>
+      <div class="col-sm-8 col-lg-9"><input class="form-check-input" id="subnetDiscovery" type="checkbox"></div>
+    </div>
+  </section>
+
+  <div id="devices" class="row g-3"></div>
+  <p class="text-muted mt-3" id="empty" hidden>No Awairs have been discovered yet. Restart Homebridge or refresh after discovery completes.</p>
+</main>
+
+<script src="app.js"></script>

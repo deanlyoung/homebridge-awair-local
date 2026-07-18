@@ -2,14 +2,17 @@
   "pluginAlias": "AwairLocal",
   "pluginType": "platform",
   "singular": true,
-  "headerDisplay": "Awair Local dynamic platform. Manually configured devices and mDNS-discovered devices use Awair's local endpoints only.",
+  "customUi": true,
+  "headerDisplay": "Awair Local dynamic platform. Manually configured devices and automatically discovered devices use Awair's local endpoints only.",
   "schema": {
     "type": "object",
     "properties": {
       "name": { "title": "Platform Name", "type": "string", "default": "Awair Local" },
-      "discovery": { "title": "Discover Awairs with mDNS", "type": "boolean", "default": true, "description": "Browses mDNS/DNS-SD services and verifies candidates with /settings/config/data." },
-      "mdnsServiceTypes": { "title": "mDNS service types", "type": "array", "items": { "type": "string" }, "default": ["_http._tcp.local", "_awair._tcp.local"], "description": "Optional service types to browse. Awair has not published a universal DNS-SD type." },
+      "discovery": { "title": "Automatically discover Awairs", "type": "boolean", "default": true, "description": "Uses mDNS/DNS-SD, then scans a small private IPv4 subnet when devices do not advertise a browseable service." },
+      "mdnsServiceTypes": { "title": "mDNS service types", "type": "array", "items": { "type": "string" }, "default": ["_http._tcp.local"], "description": "Optional DNS-SD service types to browse. Awair devices advertise their local API through HTTP." },
       "discoveryHostnames": { "title": "Known mDNS hostnames", "type": "array", "items": { "type": "string" }, "description": "Optional hostnames such as awair-elem-56cd78.local to verify at startup." },
+      "subnetDiscovery": { "title": "Fallback local-network discovery", "type": "boolean", "default": true, "description": "Probe the Homebridge host's private IPv4 subnet for Awair local APIs when DNS-SD discovery is incomplete." },
+      "subnetDiscoveryMaxHosts": { "title": "Maximum hosts to probe", "type": "integer", "minimum": 1, "maximum": 1024, "default": 254, "description": "For safety, a subnet is scanned only when it contains no more than this many usable addresses." },
       "devices": { "title": "Awair devices", "type": "array", "items": { "$ref": "#/definitions/device" }, "default": [] }
     },
     "definitions": {
@@ -29,7 +32,7 @@
           "carbonDioxideThreshold": { "type": "number", "title": "CO2 alert threshold (ppm)", "default": 0 },
           "carbonDioxideThresholdOff": { "type": "number", "title": "CO2 alert clear threshold (ppm)" },
           "voc_mixture_mw": { "type": "number", "title": "VOC reference gas molecular weight", "default": 72.6657827301974 },
-          "air_quality_method": { "type": "string", "enum": ["awair-score", "awair-aqi", "awair-pm25"], "default": "awair-score", "title": "Air-quality calculation" },
+          "air_quality_method": { "type": "string", "enum": ["awair-score", "awair-aqi", "awair-pm25"], "default": "awair-pm25", "title": "Air-quality calculation" },
           "polling_interval": { "type": "integer", "minimum": 1, "title": "Polling interval (seconds)", "default": 10 },
           "limit": { "type": "integer", "minimum": 1, "title": "Legacy data point limit", "default": 1, "description": "Retained for configuration compatibility; /air-data/latest returns one sample." },
           "logging": { "type": "boolean", "title": "Verbose logging", "default": false },
@@ -40,5 +43,5 @@
       }
     }
   },
-  "layout": ["name", "discovery", "mdnsServiceTypes", "discoveryHostnames", "devices"]
+  "layout": ["name", "discovery", "mdnsServiceTypes", "discoveryHostnames", "subnetDiscovery", "subnetDiscoveryMaxHosts", "devices"]
 }
