@@ -34,7 +34,7 @@ class AwairAccessory {
     this.carbonDioxideThreshold = number(config.carbonDioxideThreshold, 0);
     this.carbonDioxideThresholdOff = number(config.carbonDioxideThresholdOff, this.carbonDioxideThreshold);
     this.vocMW = number(config.voc_mixture_mw, DEFAULT_VOC_MW);
-    this.airQualityMethod = config.air_quality_method || 'awair-score';
+    this.airQualityMethod = config.air_quality_method || 'awair-pm25';
     this.loggingLevel = number(config.logging_level, 0);
     this.logging = Boolean(config.logging) || this.loggingLevel > 0;
     this.timer = undefined;

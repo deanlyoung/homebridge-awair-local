@@ -1,0 +1,4 @@
+.device-card .card-header { background: var(--bs-tertiary-bg); }
+.device-card[data-managed="false"] { border-style: dashed; }
+.device-meta { font-size: .85rem; word-break: break-word; }
+.managed-toggle { min-width: 7rem; }

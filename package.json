@@ -31,5 +31,7 @@
 		"url": "https://github.com/deanlyoung/homebridge-awair-local/issues"
 	},
 	"homepage": "https://github.com/deanlyoung/homebridge-awair-local#readme",
-	"dependencies": {}
+	"dependencies": {
+		"@homebridge/plugin-ui-utils": "^2.2.5"
+	}
 }

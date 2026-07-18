@@ -2,6 +2,7 @@
 
 const { AwairAccessory } = require('./awair-accessory');
 const { MdnsDiscovery } = require('./mdns-discovery');
+const { SubnetDiscovery } = require('./subnet-discovery');
 
 const PLUGIN_NAME = 'homebridge-awair-local';
 const PLATFORM_NAME = 'AwairLocal';
@@ -44,6 +45,15 @@ class AwairPlatform {
         onDevice: (device) => this.upsertDevice(device, true),
       });
       this.discovery.start();
+
+      if (this.config.subnetDiscovery !== false) {
+        this.subnetDiscovery = new SubnetDiscovery({
+          log: this.log,
+          maxHosts: this.config.subnetDiscoveryMaxHosts,
+          onDevice: (device) => this.upsertDevice(device, true),
+        });
+        this.subnetDiscovery.start();
+      }
     }
   }
 
@@ -79,6 +89,7 @@ class AwairPlatform {
 
   shutdown() {
     this.discovery?.stop();
+    this.subnetDiscovery?.stop();
     for (const handler of this.handlers.values()) handler.shutdown();
     this.handlers.clear();
   }

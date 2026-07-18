@@ -9,7 +9,7 @@
       "carbonDioxideThreshold": 1200,
       "carbonDioxideThresholdOff": 1000,
       "voc_mixture_mw": 72.6657827301974,
-      "air_quality_method": "awair-score",
+      "air_quality_method": "awair-pm25",
       "polling_interval": 10,
       "limit": 1,
       "logging": false
