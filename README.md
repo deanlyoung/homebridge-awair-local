@@ -27,8 +27,8 @@ Use a single platform entry rather than the former `accessories` entries:
     {
       "name": "Living Room Awair",
       "ip": "192.168.1.70",
-      "carbonDioxideThreshold": 1200,
-      "carbonDioxideThresholdOff": 1000,
+      "carbonDioxideThreshold": 1000,
+      "carbonDioxideThresholdOff": 800,
       "air_quality_method": "awair-pm25",
       "polling_interval": 10
     }
@@ -36,7 +36,7 @@ Use a single platform entry rather than the former `accessories` entries:
 }
 ```
 
-All prior device settings are available inside `devices`: `ip`, `url`, `model`/`devType`, `manufacturer`, `serial`, `version`, `carbonDioxideThreshold`, `carbonDioxideThresholdOff`, `voc_mixture_mw`, `air_quality_method`, `polling_interval`, `limit`, `logging`, and `logging_level`. `configUrl`/`config_url` and `requestTimeout` are also supported. Defaults remain 10 seconds, `awair-pm25`, 1 data point, and a VOC molecular weight of 72.6657827301974.
+All prior device settings are available inside `devices`: `ip`, `url`, `model`/`devType`, `manufacturer`, `serial`, `version`, `carbonDioxideThreshold`, `carbonDioxideThresholdOff`, `voc_mixture_mw`, `air_quality_method`, `polling_interval`, `limit`, `logging`, and `logging_level`. `configUrl`/`config_url` and `requestTimeout` are also supported. Defaults are CO₂ alert/clear thresholds of 1000/800 ppm, a 10-second polling interval, `awair-pm25`, 1 data point, and a VOC molecular weight of 72.6657827301974.
 
 ## Discovery
 

@@ -1,7 +1,14 @@
 const state = { config: {}, devices: [] };
+const deviceConfigFields = new Set([
+  'name', 'ip', 'host', 'url', 'configUrl', 'model', 'manufacturer', 'serial', 'version',
+  'carbonDioxideThreshold', 'carbonDioxideThresholdOff', 'voc_mixture_mw',
+  'air_quality_method', 'polling_interval', 'limit', 'logging', 'logging_level', 'requestTimeout',
+]);
 
 window.addEventListener('DOMContentLoaded', load);
 document.querySelector('#save').addEventListener('click', save);
+
+applyTheme();
 
 async function load() {
   const configs = await homebridge.getPluginConfig();
@@ -10,12 +17,25 @@ async function load() {
   state.devices = mergeDevices(state.config.devices || [], discovered);
   document.querySelector('#discovery').checked = state.config.discovery !== false;
   document.querySelector('#subnetDiscovery').checked = state.config.subnetDiscovery !== false;
+  document.querySelector('#discovery').addEventListener('change', queueConfigUpdate);
+  document.querySelector('#subnetDiscovery').addEventListener('change', queueConfigUpdate);
   render();
+  queueConfigUpdate();
 }
 
 function mergeDevices(configured, discovered) {
-  const devices = configured.map((device) => ({ ...device, model: device.model || device.devType || '', managed: true }));
-  const configuredIds = new Set(devices.map(identity));
+  const devices = [];
+  const configuredIds = new Set();
+  for (const device of configured) {
+    const cached = discovered.find((candidate) => sameDevice(device, candidate));
+    const id = identity(cached || device);
+    if (configuredIds.has(id)) continue;
+    const merged = { ...cached, ...device, model: device.model || device.devType || cached?.model || '', managed: true };
+    if (cached?.wifi_mac || cached?.device_uuid) merged.serial = cached.wifi_mac || cached.device_uuid;
+    if (cached?.fw_version || (cached?.version && cached.version !== 'unknown')) merged.version = cached.fw_version || cached.version;
+    devices.push(merged);
+    configuredIds.add(id);
+  }
   for (const device of discovered) {
     if (!configuredIds.has(identity(device))) devices.push({ ...device, managed: false, discovered: true });
   }
@@ -44,8 +64,8 @@ function deviceCard(device, index) {
         <label class="col-sm-4 col-form-label">Name</label><div class="col-sm-8"><input class="form-control" data-field="name" value="${escapeHtml(title)}"></div>
         <label class="col-sm-4 col-form-label">Host or IP</label><div class="col-sm-8"><input class="form-control" data-field="endpoint" value="${escapeHtml(endpoint)}"></div>
         <label class="col-sm-4 col-form-label">Air quality</label><div class="col-sm-8"><select class="form-select" data-field="air_quality_method"><option value="awair-pm25">PM2.5</option><option value="awair-score">Awair score</option><option value="awair-aqi">AQI</option></select></div>
-        <label class="col-sm-4 col-form-label">CO₂ threshold</label><div class="col-sm-8"><input class="form-control" data-field="carbonDioxideThreshold" type="number" min="0" value="${escapeHtml(device.carbonDioxideThreshold ?? 0)}"></div>
-        <label class="col-sm-4 col-form-label">CO₂ clear threshold</label><div class="col-sm-8"><input class="form-control" data-field="carbonDioxideThresholdOff" type="number" min="0" value="${escapeHtml(device.carbonDioxideThresholdOff ?? '')}"></div>
+        <label class="col-sm-4 col-form-label">CO₂ threshold</label><div class="col-sm-8"><input class="form-control" data-field="carbonDioxideThreshold" type="number" min="0" step="1" value="${escapeHtml(device.carbonDioxideThreshold ?? 1000)}"></div>
+        <label class="col-sm-4 col-form-label">CO₂ clear threshold</label><div class="col-sm-8"><input class="form-control" data-field="carbonDioxideThresholdOff" type="number" min="0" step="1" value="${escapeHtml(device.carbonDioxideThresholdOff ?? 800)}"></div>
         <label class="col-sm-4 col-form-label">Polling seconds</label><div class="col-sm-8"><input class="form-control" data-field="polling_interval" type="number" min="1" value="${escapeHtml(device.polling_interval ?? 10)}"></div>
       </div>
       <details class="mt-3">
@@ -54,7 +74,7 @@ function deviceCard(device, index) {
           <label class="col-sm-4 col-form-label">Model (device type)</label><div class="col-sm-8"><input class="form-control" data-field="model" value="${escapeHtml(device.model || device.devType || '')}" placeholder="awair-element"></div>
           <label class="col-sm-4 col-form-label">Manufacturer</label><div class="col-sm-8"><input class="form-control" data-field="manufacturer" value="${escapeHtml(device.manufacturer || 'Awair')}"></div>
           <label class="col-sm-4 col-form-label">Serial number</label><div class="col-sm-8"><input class="form-control" data-field="serial" value="${escapeHtml(device.serial || '')}"></div>
-          <label class="col-sm-4 col-form-label">Firmware version</label><div class="col-sm-8"><input class="form-control" data-field="version" value="${escapeHtml(device.version || '')}"></div>
+          <label class="col-sm-4 col-form-label">Firmware version</label><div class="col-sm-8"><input class="form-control" data-field="version" value="${escapeHtml(device.fw_version || device.version || '')}"></div>
           <label class="col-sm-4 col-form-label">VOC molecular weight</label><div class="col-sm-8"><input class="form-control" data-field="voc_mixture_mw" type="number" min="0" step="any" value="${escapeHtml(device.voc_mixture_mw ?? 72.6657827301974)}"></div>
           <label class="col-sm-4 col-form-label">Legacy data-point limit</label><div class="col-sm-8"><input class="form-control" data-field="limit" type="number" min="1" value="${escapeHtml(device.limit ?? 1)}"></div>
           <label class="col-sm-4 col-form-label">Air-data URL override</label><div class="col-sm-8"><input class="form-control" data-field="url" type="url" value="${escapeHtml(device.url || '')}" placeholder="http://host/air-data/latest"></div>
@@ -67,10 +87,14 @@ function deviceCard(device, index) {
     </div>`;
   const select = card.querySelector('[data-field="air_quality_method"]');
   select.value = device.air_quality_method || 'awair-pm25';
-  card.querySelector('.managed-toggle').addEventListener('click', () => { state.devices[index].managed = !state.devices[index].managed; render(); });
+  card.querySelector('.managed-toggle').addEventListener('click', () => {
+    state.devices[index].managed = !state.devices[index].managed;
+    render();
+    queueConfigUpdate();
+  });
   card.querySelectorAll('[data-field]').forEach((input) => {
-    input.addEventListener('input', () => updateDevice(index, card, true));
-    input.addEventListener('change', () => updateDevice(index, card, true));
+    input.addEventListener('input', () => { updateDevice(index, card, true); queueConfigUpdate(); });
+    input.addEventListener('change', () => { updateDevice(index, card, true); queueConfigUpdate(); });
   });
   column.append(card);
   return column;
@@ -83,14 +107,14 @@ function updateDevice(index, card, manage) {
   delete device.ip; delete device.host;
   if (/^\d{1,3}(\.\d{1,3}){3}$/.test(endpoint)) device.ip = endpoint; else device.host = endpoint;
   device.air_quality_method = card.querySelector('[data-field="air_quality_method"]').value;
-  device.carbonDioxideThreshold = Number(card.querySelector('[data-field="carbonDioxideThreshold"]').value) || 0;
+  device.carbonDioxideThreshold = Math.round(Number(card.querySelector('[data-field="carbonDioxideThreshold"]').value)) || 0;
   device.polling_interval = Number(card.querySelector('[data-field="polling_interval"]').value) || 10;
   optionalText(device, 'model', card);
   delete device.devType;
   optionalText(device, 'manufacturer', card);
   optionalText(device, 'serial', card);
   optionalText(device, 'version', card);
-  optionalNumber(device, 'carbonDioxideThresholdOff', card);
+  optionalInteger(device, 'carbonDioxideThresholdOff', card);
   device.voc_mixture_mw = Number(card.querySelector('[data-field="voc_mixture_mw"]').value) || 72.6657827301974;
   device.limit = Number(card.querySelector('[data-field="limit"]').value) || 1;
   optionalText(device, 'url', card);
@@ -103,18 +127,25 @@ function updateDevice(index, card, manage) {
 }
 
 async function save() {
+  await updatePluginConfig();
+  await homebridge.savePluginConfig();
+  homebridge.toast.success('Awair configuration saved. Restart Homebridge to apply changes.');
+}
+
+function queueConfigUpdate() {
+  updatePluginConfig().catch((error) => homebridge.toast.error(`Could not update configuration: ${error.message}`));
+}
+
+async function updatePluginConfig() {
   document.querySelectorAll('.device-card').forEach((card) => updateDevice(Number(card.dataset.index), card, false));
   state.config.discovery = document.querySelector('#discovery').checked;
   state.config.subnetDiscovery = document.querySelector('#subnetDiscovery').checked;
   state.config.devices = state.devices.filter((device) => device.managed).map(cleanDevice);
   await homebridge.updatePluginConfig([state.config]);
-  await homebridge.savePluginConfig();
-  homebridge.toast.success('Awair configuration saved. Restart Homebridge to apply changes.');
 }
 
 function cleanDevice(device) {
-  const { managed, discovered, displayName, uuid, device_uuid, wifi_mac, fw_version, ...config } = device;
-  return config;
+  return Object.fromEntries(Object.entries(device).filter(([field, value]) => deviceConfigFields.has(field) && value !== undefined && value !== ''));
 }
 
 function optionalText(device, field, card) {
@@ -122,11 +153,26 @@ function optionalText(device, field, card) {
   if (value) device[field] = value; else delete device[field];
 }
 
-function optionalNumber(device, field, card) {
+function optionalInteger(device, field, card) {
   const value = card.querySelector(`[data-field="${field}"]`).value;
-  if (value === '') delete device[field]; else device[field] = Number(value);
+  if (value === '') delete device[field]; else device[field] = Math.round(Number(value));
 }
 
-function identity(device) { return device.serial || device.wifi_mac || device.device_uuid || device.host || device.ip || device.uuid; }
+function identity(device) { return String(device.device_uuid || device.wifi_mac || device.serial || device.host || device.ip || device.uuid || '').toLowerCase(); }
+function sameDevice(first, second) {
+  if (identity(first) && identity(first) === identity(second)) return true;
+  const firstEndpoints = [first.host, first.ip, ...(first.aliases || [])].filter(Boolean).map((value) => String(value).toLowerCase());
+  const secondEndpoints = [second.host, second.ip, ...(second.aliases || [])].filter(Boolean).map((value) => String(value).toLowerCase());
+  return firstEndpoints.some((endpoint) => secondEndpoints.includes(endpoint));
+}
+function applyTheme() {
+  const documents = [document];
+  try { if (window.parent !== window) documents.push(window.parent.document); } catch (_) { /* Cross-origin parent; use the local document only. */ }
+  const dark = documents.some((current) => {
+    const nodes = [current.documentElement, current.body].filter(Boolean);
+    return nodes.some((node) => node.dataset.bsTheme === 'dark' || node.dataset.theme === 'dark' || node.classList.contains('dark') || node.classList.contains('dark-mode'));
+  }) || window.matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.classList.toggle('awair-dark-theme', dark);
+}
 function element(tag, className) { const node = document.createElement(tag); node.className = className; return node; }
 function escapeHtml(value) { return String(value ?? '').replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char])); }

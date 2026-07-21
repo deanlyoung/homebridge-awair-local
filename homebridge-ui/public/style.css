@@ -7,3 +7,21 @@
 .device-meta { font-size: .85rem; word-break: break-word; }
 .managed-toggle { min-width: 7rem; }
 .device-card details summary { cursor: pointer; font-weight: 500; }
+.device-card input[data-field="voc_mixture_mw"] { appearance: textfield; -moz-appearance: textfield; }
+.device-card input[data-field="voc_mixture_mw"]::-webkit-inner-spin-button,
+.device-card input[data-field="voc_mixture_mw"]::-webkit-outer-spin-button { appearance: none; margin: 0; }
+:root.awair-dark-theme .device-card .form-control,
+:root.awair-dark-theme .device-card .form-select,
+[data-bs-theme="dark"] .device-card .form-control,
+[data-bs-theme="dark"] .device-card .form-select { background-color: #2b3138; border-color: #56616d; color: #edf1f5; }
+:root.awair-dark-theme .device-card .form-control::placeholder,
+[data-bs-theme="dark"] .device-card .form-control::placeholder { color: #aeb7c2; opacity: 1; }
+:root.awair-dark-theme .device-card .form-control:focus,
+:root.awair-dark-theme .device-card .form-select:focus,
+[data-bs-theme="dark"] .device-card .form-control:focus,
+[data-bs-theme="dark"] .device-card .form-select:focus { background-color: #323941; border-color: #7d8b9b; box-shadow: 0 0 0 .2rem rgba(125, 139, 155, .2); }
+@media (prefers-color-scheme: dark) {
+  .device-card .form-control,
+  .device-card .form-select { background-color: #2b3138; border-color: #56616d; color: #edf1f5; }
+  .device-card .form-control::placeholder { color: #aeb7c2; opacity: 1; }
+}

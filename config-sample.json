@@ -6,8 +6,8 @@
     {
       "name": "Living Room Awair",
       "ip": "192.168.1.70",
-      "carbonDioxideThreshold": 1200,
-      "carbonDioxideThresholdOff": 1000,
+      "carbonDioxideThreshold": 1000,
+      "carbonDioxideThresholdOff": 800,
       "voc_mixture_mw": 72.6657827301974,
       "air_quality_method": "awair-pm25",
       "polling_interval": 10,

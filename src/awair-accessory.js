@@ -17,9 +17,9 @@ class AwairAccessory {
       ...settings,
       ip: settings.ip || config.ip,
       host: config.host,
-      model: config.model || config.devType || modelFromUuid(settings.device_uuid) || 'Awair',
-      serial: config.serial || settings.wifi_mac || settings.device_uuid || config.ip || config.host,
-      version: config.version || settings.fw_version || 'unknown',
+      model: modelFromUuid(settings.device_uuid) || config.model || config.devType || 'Awair',
+      serial: settings.wifi_mac || settings.device_uuid || config.serial || config.ip || config.host,
+      version: settings.fw_version || config.version || 'unknown',
       manufacturer: config.manufacturer || 'Awair',
     };
   }
@@ -31,8 +31,8 @@ class AwairAccessory {
     this.Service = platform.Service;
     this.Characteristic = platform.Characteristic;
     this.intervalSeconds = positiveNumber(config.polling_interval, 10);
-    this.carbonDioxideThreshold = number(config.carbonDioxideThreshold, 0);
-    this.carbonDioxideThresholdOff = number(config.carbonDioxideThresholdOff, this.carbonDioxideThreshold);
+    this.carbonDioxideThreshold = number(config.carbonDioxideThreshold, 1000);
+    this.carbonDioxideThresholdOff = number(config.carbonDioxideThresholdOff, 800);
     this.vocMW = number(config.voc_mixture_mw, DEFAULT_VOC_MW);
     this.airQualityMethod = config.air_quality_method || 'awair-pm25';
     this.loggingLevel = number(config.logging_level, 0);
