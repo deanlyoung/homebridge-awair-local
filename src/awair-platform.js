@@ -34,7 +34,7 @@ class AwairPlatform {
         this.log.warn('Ignoring a configured Awair without an ip or host.');
         continue;
       }
-      this.upsertDevice(device, false);
+      this.upsertDeviceSafely(device, false);
     }
 
     if (this.config.discovery !== false) {
@@ -42,7 +42,7 @@ class AwairPlatform {
         log: this.log,
         serviceTypes: this.config.mdnsServiceTypes,
         hostnames: this.config.discoveryHostnames,
-        onDevice: (device) => this.upsertDevice(device, true),
+        onDevice: (device) => this.upsertDeviceSafely(device, true),
       });
       this.discovery.start();
 
@@ -57,16 +57,31 @@ class AwairPlatform {
     }
   }
 
+  async upsertDeviceSafely(device, discovered) {
+    try {
+      await this.upsertDevice(device, discovered);
+    } catch (error) {
+      const endpoint = device.host || device.ip || 'unknown endpoint';
+      this.log.warn(`Could not initialize Awair at ${endpoint}: ${error.message}`);
+    }
+  }
+
   async upsertDevice(device, discovered) {
     const normalized = await AwairAccessory.identify(device);
-    const identity = normalized.device_uuid || normalized.wifi_mac || normalized.host || normalized.ip;
+    const identity = deviceIdentity(normalized);
     if (!identity) {
       this.log.warn('Skipping Awair with no stable device identity.');
       return;
     }
 
     const uuid = this.api.hap.uuid.generate(`${PLUGIN_NAME}:${identity}`);
-    let accessory = this.accessories.get(uuid);
+    const matchingAccessories = [...this.accessories.values()].filter((candidate) => deviceIdentity(candidate.context.device) === identity);
+    let accessory = this.accessories.get(uuid) || matchingAccessories[0];
+    const duplicates = matchingAccessories.filter((candidate) => candidate !== accessory);
+    if (duplicates.length) {
+      this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, duplicates);
+      for (const [key, candidate] of this.accessories) if (duplicates.includes(candidate)) this.accessories.delete(key);
+    }
     const name = normalized.name || normalized.device_uuid || normalized.host || normalized.ip;
 
     if (!accessory) {
@@ -78,7 +93,13 @@ class AwairPlatform {
       accessory.updateDisplayName(name);
     }
 
-    accessory.context.device = { ...accessory.context.device, ...normalized };
+    const aliases = [...new Set([
+      ...(accessory.context.device.aliases || []), accessory.context.device.host, accessory.context.device.ip,
+      normalized.host, normalized.ip,
+    ].filter(Boolean))];
+    for (const [key, candidate] of this.accessories) if (candidate === accessory) this.accessories.delete(key);
+    this.accessories.set(uuid, accessory);
+    accessory.context.device = { ...accessory.context.device, ...normalized, aliases };
     this.api.updatePlatformAccessories([accessory]);
 
     this.handlers.get(uuid)?.shutdown();
@@ -93,6 +114,10 @@ class AwairPlatform {
     for (const handler of this.handlers.values()) handler.shutdown();
     this.handlers.clear();
   }
+}
+
+function deviceIdentity(device = {}) {
+  return String(device.device_uuid || device.wifi_mac || device.serial || device.host || device.ip || '').toLowerCase();
 }
 
 module.exports = { AwairPlatform, PLUGIN_NAME, PLATFORM_NAME };
