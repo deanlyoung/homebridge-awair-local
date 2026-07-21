@@ -1,4 +1,9 @@
-.device-card .card-header { background: var(--bs-tertiary-bg); }
+.device-card .card-header { background-color: #212529; color: #fff; }
+.device-card .card-header .btn-outline-primary { border-color: #86b7fe; color: #b6d4fe; }
+.device-card .card-header .btn-outline-primary:hover { background-color: #0d6efd; border-color: #0d6efd; color: #fff; }
+.device-card .card-header .btn-outline-danger { border-color: #f1aeb5; color: #f1aeb5; }
+.device-card .card-header .btn-outline-danger:hover { background-color: #dc3545; border-color: #dc3545; color: #fff; }
 .device-card[data-managed="false"] { border-style: dashed; }
 .device-meta { font-size: .85rem; word-break: break-word; }
 .managed-toggle { min-width: 7rem; }
+.device-card details summary { cursor: pointer; font-weight: 500; }
