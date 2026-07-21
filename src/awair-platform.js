@@ -37,7 +37,7 @@ class AwairPlatform {
       this.upsertDeviceSafely(device, false);
     }
 
-    if (this.config.discovery !== false) {
+    if (this.config.discovery === true) {
       this.discovery = new MdnsDiscovery({
         log: this.log,
         serviceTypes: this.config.mdnsServiceTypes,
@@ -50,7 +50,7 @@ class AwairPlatform {
         this.subnetDiscovery = new SubnetDiscovery({
           log: this.log,
           maxHosts: this.config.subnetDiscoveryMaxHosts,
-          onDevice: (device) => this.upsertDevice(device, true),
+          onDevice: (device) => this.upsertDeviceSafely(device, true),
         });
         this.subnetDiscovery.start();
       }

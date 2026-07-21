@@ -15,7 +15,7 @@ async function load() {
   state.config = configs[0] || { platform: 'AwairLocal' };
   const discovered = await homebridge.request('/discovered-devices');
   state.devices = mergeDevices(state.config.devices || [], discovered);
-  document.querySelector('#discovery').checked = state.config.discovery !== false;
+  document.querySelector('#discovery').checked = state.config.discovery === true;
   document.querySelector('#subnetDiscovery').checked = state.config.subnetDiscovery !== false;
   document.querySelector('#discovery').addEventListener('change', queueConfigUpdate);
   document.querySelector('#subnetDiscovery').addEventListener('change', queueConfigUpdate);

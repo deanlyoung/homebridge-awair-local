@@ -8,7 +8,7 @@
     "type": "object",
     "properties": {
       "name": { "title": "Platform Name", "type": "string", "default": "Awair Local" },
-      "discovery": { "title": "Automatically discover Awairs", "type": "boolean", "default": true, "description": "Uses mDNS/DNS-SD, then scans a small private IPv4 subnet when devices do not advertise a browseable service." },
+      "discovery": { "title": "Automatically discover Awairs", "type": "boolean", "default": false, "description": "Enable to use mDNS/DNS-SD, then scan a small private IPv4 subnet when devices do not advertise a browseable service." },
       "mdnsServiceTypes": { "title": "mDNS service types", "type": "array", "items": { "type": "string" }, "default": ["_http._tcp.local"], "description": "Optional DNS-SD service types to browse. Awair devices advertise their local API through HTTP." },
       "discoveryHostnames": { "title": "Known mDNS hostnames", "type": "array", "items": { "type": "string" }, "description": "Optional hostnames such as awair-elem-56cd78.local to verify at startup." },
       "subnetDiscovery": { "title": "Fallback local-network discovery", "type": "boolean", "default": true, "description": "Probe the Homebridge host's private IPv4 subnet for Awair local APIs when DNS-SD discovery is incomplete." },
