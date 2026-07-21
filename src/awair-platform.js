@@ -34,7 +34,7 @@ class AwairPlatform {
         this.log.warn('Ignoring a configured Awair without an ip or host.');
         continue;
       }
-      this.upsertDevice(device, false);
+      this.upsertDeviceSafely(device, false);
     }
 
     if (this.config.discovery !== false) {
@@ -42,7 +42,7 @@ class AwairPlatform {
         log: this.log,
         serviceTypes: this.config.mdnsServiceTypes,
         hostnames: this.config.discoveryHostnames,
-        onDevice: (device) => this.upsertDevice(device, true),
+        onDevice: (device) => this.upsertDeviceSafely(device, true),
       });
       this.discovery.start();
 
@@ -54,6 +54,15 @@ class AwairPlatform {
         });
         this.subnetDiscovery.start();
       }
+    }
+  }
+
+  async upsertDeviceSafely(device, discovered) {
+    try {
+      await this.upsertDevice(device, discovered);
+    } catch (error) {
+      const endpoint = device.host || device.ip || 'unknown endpoint';
+      this.log.warn(`Could not initialize Awair at ${endpoint}: ${error.message}`);
     }
   }
 

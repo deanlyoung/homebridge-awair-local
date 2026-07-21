@@ -2,13 +2,19 @@
 
 Homebridge v2 dynamic platform for Awair devices using their local API. It exposes temperature, humidity, CO2, TVOC, PM2.5, PM10 and (for Mint/Omni) light services. No Awair cloud credentials are needed.
 
+## Privacy
+
+The plugin communicates only with Awair devices on the local network. It contains no analytics, telemetry, or cloud API calls. Device addresses and readings remain on the Homebridge host and local network.
+
 ## Requirements
 
 - Homebridge 2.0 or newer
-- Node.js 18 or newer
+- Node.js 22 or 24
 - Awair Local API enabled. The device must answer `/air-data/latest` and `/settings/config/data` on the local network.
 
 ## Configuration
+
+Install the plugin from the Homebridge UI and add **Awair Local** from the Plugin Settings screen. The settings GUI supports automatic discovery and manual device entries. You can also use the following JSON configuration.
 
 Use a single platform entry rather than the former `accessories` entries:
 
@@ -41,3 +47,7 @@ Awair documents mDNS hostnames (for example, `awair-elem-56cd78.local`) but does
 ## Migration
 
 Replace each old `accessories` entry with an object in the platform's `devices` array, and replace `"accessory": "AwairLocal"` with `"platform": "AwairLocal"`. Existing setting names retain their meaning. The old `limit` option is retained for compatibility but has no effect on `/air-data/latest`, which returns one reading.
+
+## Development and releases
+
+Run `npm run lint` and `npm test` before opening a pull request. CI verifies installation, linting, tests, and the package contents on Node.js 22 and 24. Publishing from `master` creates the npm release, an annotated Git tag, and a GitHub release with generated notes.

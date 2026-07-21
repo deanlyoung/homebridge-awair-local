@@ -3,6 +3,19 @@
   "version": "2.1.0",
 	"description": "Awair Local dynamic platform plugin for Homebridge v2",
 	"main": "index.js",
+	"files": [
+		"index.js",
+		"src",
+		"homebridge-ui",
+		"config.schema.json",
+		"config-sample.json",
+		"README.md",
+		"LICENSE"
+	],
+	"scripts": {
+		"lint": "node --check index.js && node --check homebridge-ui/server.js && node --check src/*.js",
+		"test": "node --test"
+	},
 	"keywords": [
 		"homebridge",
 		"homebridge-plugin",
@@ -16,7 +29,7 @@
 		"awair element"
 	],
 	"engines": {
-		"node": ">=18.0.0",
+		"node": ">=22.0.0 <25",
 		"homebridge": ">=2.0.0"
 	},
 	"author": {
