@@ -5,6 +5,7 @@ const assert = require('node:assert/strict');
 
 const { AwairPlatform } = require('../src/awair-platform');
 const { AwairAccessory } = require('../src/awair-accessory');
+const { SubnetDiscovery } = require('../src/subnet-discovery');
 
 function createApi() {
   return {
@@ -24,6 +25,33 @@ test('invalid configured devices are reported without an unhandled rejection', a
 
   assert.equal(warnings.length, 1);
   assert.match(warnings[0], /Could not initialize Awair at 127\.0\.0\.1/);
+});
+
+test('automatic discovery is disabled unless explicitly enabled', () => {
+  const platform = new AwairPlatform({ warn() {} }, {}, createApi());
+
+  platform.start();
+
+  assert.equal(platform.discovery, undefined);
+  assert.equal(platform.subnetDiscovery, undefined);
+});
+
+test('subnet discovery awaits callback failures and reports them', async (t) => {
+  const originalFetch = global.fetch;
+  const debug = [];
+  global.fetch = async () => ({ ok: true, json: async () => ({ device_uuid: 'awair-element_test' }) });
+  t.after(() => { global.fetch = originalFetch; });
+
+  const discovery = new SubnetDiscovery({
+    log: { debug: (message) => debug.push(message) },
+    onDevice: async () => { throw new Error('callback failed'); },
+  });
+  discovery.scan = () => discovery.verify('192.168.1.70');
+
+  discovery.start();
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.deepEqual(debug, ['Subnet discovery error: callback failed']);
 });
 
 test('CO₂ thresholds default to alert at 1000 ppm and clear at 800 ppm', () => {

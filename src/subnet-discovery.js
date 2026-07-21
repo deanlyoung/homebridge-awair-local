@@ -42,17 +42,19 @@ class SubnetDiscovery {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.timeout);
     this.controllers.add(controller);
+    let data;
     try {
       const response = await fetch(buildEndpoint({ ip }, '/settings/config/data'), { signal: controller.signal });
       if (!response.ok) return;
-      const data = await response.json();
-      if (data.device_uuid && /^awair-/i.test(data.device_uuid)) this.onDevice({ ...data, ip: data.ip || ip });
+      data = await response.json();
     } catch (_) {
       // Most addresses are not Awairs, so connection failures are expected.
+      return;
     } finally {
       clearTimeout(timeout);
       this.controllers.delete(controller);
     }
+    if (data.device_uuid && /^awair-/i.test(data.device_uuid)) await this.onDevice({ ...data, ip: data.ip || ip });
   }
 }
 
