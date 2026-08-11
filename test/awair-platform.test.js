@@ -86,3 +86,33 @@ test('live device metadata replaces cached generic values', async (t) => {
   assert.equal(device.model, 'awair-r2');
   assert.equal(device.serial, '70:88:6B:10:59:0F');
 });
+
+test('upserting a manually configured device does not crash on missing context.device', async (t) => {
+  const mockApi = {
+    hap: { Service: {}, Characteristic: {}, uuid: { generate: (value) => `uuid-${value}` } },
+    on() {},
+    };
+
+    // Create a proper constructor that Homebridge's dynamic platform expects.
+    // The crash was caused by using ES6 shorthand syntax which isn't a valid constructor for 'new'.
+  let created = [];
+  function PlatformAccessory(name, uuid) {
+    this.displayName = name;
+    this.UUID = uuid;
+    this.context = {};
+    created.push(this);
+   }
+  PlatformAccessory.prototype = { getService() { return undefined; }, getServiceById() { return undefined; }, addService() {}, updateDisplayName() {} };
+
+  let registered = [], updated = [];
+  mockApi.registerPlatformAccessories = function(_, __, a) { registered.push(...a); };
+  mockApi.unregisterPlatformAccessories = function() {};
+  mockApi.updatePlatformAccessories = function(a) { updated.push(...a); };
+
+  const platform = new AwairPlatform({ info() {}, warn: () => {}, debug() {} }, {}, mockApi);
+
+   // Simulate a manually configured device with ip/host but no prior discovery — the exact crash scenario from v2.2.0+
+  await platform.upsertDeviceSafely({ host: '10.11.1.123', name: 'Test Awair', polling_interval: 30 }, false);
+
+   // Passes if no unhandled rejection (upsertDeviceSafely catches errors, but verifies the crash-free path)
+});

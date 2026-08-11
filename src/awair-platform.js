@@ -74,6 +74,10 @@ class AwairPlatform {
       return;
     }
 
+    for (const candidate of this.accessories.values()) {
+       if (!candidate.context) candidate.context = {};
+      }
+
     const uuid = this.api.hap.uuid.generate(`${PLUGIN_NAME}:${identity}`);
     const matchingAccessories = [...this.accessories.values()].filter((candidate) => deviceIdentity(candidate.context.device) === identity);
     let accessory = this.accessories.get(uuid) || matchingAccessories[0];
@@ -88,18 +92,20 @@ class AwairPlatform {
       accessory = new this.api.platformAccessory(name, uuid);
       this.accessories.set(uuid, accessory);
       this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+      accessory.context.device = { ...normalized };
       this.log.info(`Added ${discovered ? 'discovered' : 'configured'} Awair: ${name}`);
     } else if (accessory.displayName !== name) {
       accessory.updateDisplayName(name);
     }
 
+    const contextDevice = accessory.context?.device || {};
     const aliases = [...new Set([
-      ...(accessory.context.device.aliases || []), accessory.context.device.host, accessory.context.device.ip,
+       ...(contextDevice.aliases || []), contextDevice.host, contextDevice.ip,
       normalized.host, normalized.ip,
     ].filter(Boolean))];
     for (const [key, candidate] of this.accessories) if (candidate === accessory) this.accessories.delete(key);
     this.accessories.set(uuid, accessory);
-    accessory.context.device = { ...accessory.context.device, ...normalized, aliases };
+    accessory.context.device = { ...(accessory.context.device || {}), ...normalized, aliases };
     this.api.updatePlatformAccessories([accessory]);
 
     this.handlers.get(uuid)?.shutdown();
