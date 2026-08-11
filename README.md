@@ -1,5 +1,7 @@
 # homebridge-awair-local
 
+[![verified-by-homebridge](https://img.shields.io/badge/homebridge-verified-blueviolet?color=%23491F59&style=for-the-badge&logoColor=%23FFFFFF&logo=homebridge)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins)
+
 Homebridge v2 dynamic platform for Awair devices using their local API. It exposes temperature, humidity, CO2, TVOC, PM2.5, PM10 and (for Mint/Omni) light services. No Awair cloud credentials are needed.
 
 ## Privacy
