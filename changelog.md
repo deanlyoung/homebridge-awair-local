@@ -4,11 +4,12 @@ All notable changes to `homebridge-awair-local` are documented in this file. Thi
 
 The entries below are based on the repository's release tags. Changes that were repeated in later merge or release notes are listed only with the first release that introduced them.
 
-## Unreleased
+## v2.2.2 (2026-08-10)
 
 ### Fixed
 
 - Prevented a crash when manually configuring a new device (`Cannot read properties of undefined (reading 'aliases')`).
+- Added Homebridge badge
 
 ## v2.2.1 (2026-07-21)
 

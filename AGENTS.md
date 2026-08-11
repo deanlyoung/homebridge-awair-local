@@ -39,29 +39,24 @@ npm test
 - Before opening or updating a PR, add the canonical entry under `Unreleased` in `changelog.md`.
 - Do not create duplicate entries for the same change.
 
-### Semantic versioning
+### Release checklist
 
-- At PR time, state the recommended SemVer impact in the PR description:
-  - `patch`: backward-compatible bug fix, documentation-only release note, or internal fix with a user-visible correction.
-  - `minor`: backward-compatible new feature.
-  - `major`: any breaking change to a public API, configuration, CLI behavior, supported platform, or documented contract.
-- Clearly call out breaking changes and migration steps.
-- Do not bump the released version for every merged PR. Keep changes under `Unreleased` until preparing a release.
-- When asked to prepare or merge a release:
-  1. Confirm the proposed next version from the current released version.
-  2. Update every authoritative version location in the repository.
-  3. Rename or move `Unreleased` entries into a dated version heading.
-  4. Use the same release-summary text for the release PR description.
-  5. Run the documented tests and report the exact version changed.
+Before pushing a release:
 
-### PR completion checklist
-
-Before creating a PR, report:
-
-- The canonical changelog/PR description text.
-- Recommended SemVer impact and why.
-- Whether this is a normal PR (`Unreleased`) or a release PR (version bump).
-- Version files changed, if this is a release PR.
+1. Confirm the proposed version bump and SemVer category (patch / minor / major).
+2. Verify no `vX.Y.Z` tag already exists on remote (`git ls-remote --tags origin | grep vX.Y.Z`). If it does, delete it locally and remotely first.
+3. Update every authoritative version location:
+   - `package.json`: `"version": "X.Y.Z"`
+   - `package-lock.json`: top-level `"version": "X.Y.Z"`, nested `"version": "X.Y.Z"`
+   - `changelog.md`: rename `## Unreleased` to `## vX.Y.Z (YYYY-MM-DD)`, move applicable entries under it
+4. Commit all version files in a single commit with message: `Release vX.Y.Z - <summary>`
+5. Push the branch with `--tags` (`git push origin <branch> --tags`)
+6. Create and push the annotated tag separately:
+   ```sh
+   git tag -a vX.Y.Z -m "Release vX.Y.Z - <summary>" HEAD
+   git push origin vX.Y.Z
+   ```
+7. Report the version changed, commit SHA, and tag URL.
 
 ### Versioning policy
 
