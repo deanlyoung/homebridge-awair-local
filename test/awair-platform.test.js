@@ -86,3 +86,37 @@ test('live device metadata replaces cached generic values', async (t) => {
   assert.equal(device.model, 'awair-r2');
   assert.equal(device.serial, '70:88:6B:10:59:0F');
 });
+
+test('upserting a manually configured device does not crash on missing context.device', async () => {
+  const log = { info() {}, warn() {}, debug() {} };
+  let registeredAccessories = [];
+  let updatedAccessories = [];
+
+  const mockApi = {
+    hap: {
+      Service: {},
+      Characteristic: {},
+      uuid: { generate: (value) => value },
+    },
+    on() {},
+    platformAccessory(name, uuid) {
+      return { displayName: name, UUID: uuid, context: {}, getService() { return undefined; }, getServiceById() { return undefined; }, addService() {} };
+    },
+    registerPlatformAccessories(pluginName, platformName, accessories) {
+      registeredAccessories.push(...accessories);
+    },
+    unregisterPlatformAccessories(pluginName, platformName, accessories) {
+      // no-op for this test
+    },
+    updatePlatformAccessories(accessories) {
+      updatedAccessories.push(...accessories);
+    },
+  };
+
+  const platform = new AwairPlatform(log, {}, mockApi);
+
+  // Simulate a manual device config with ip/host but no prior discovery (the exact crash scenario from v2.2.0+)
+  await platform.upsertDevice({ host: '10.11.1.123', name: 'Test Awair', polling_interval: 30 }, false);
+
+  // The fix ensures context.device is set immediately for new accessories, preventing the .aliases crash
+});
