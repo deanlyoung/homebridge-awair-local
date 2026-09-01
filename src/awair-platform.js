@@ -68,49 +68,54 @@ class AwairPlatform {
 
   async upsertDevice(device, discovered) {
     const normalized = await AwairAccessory.identify(device);
-    const identity = deviceIdentity(normalized);
+    // A configured endpoint or serial must keep the same HAP identity whether or not
+    // the optional settings endpoint is reachable. Discovered devices already carry
+    // their hardware identity, so they continue to prefer that value.
+    const identity = deviceIdentity(device) || deviceIdentity(normalized);
     if (!identity) {
       this.log.warn('Skipping Awair with no stable device identity.');
       return;
     }
 
-    for (const candidate of this.accessories.values()) {
-       if (!candidate.context) candidate.context = {};
-      }
-
     const uuid = this.api.hap.uuid.generate(`${PLUGIN_NAME}:${identity}`);
-    const matchingAccessories = [...this.accessories.values()].filter((candidate) => deviceIdentity(candidate.context.device) === identity);
+    const matchingAccessories = [...new Set(this.accessories.values())]
+      .filter((candidate) => candidate.UUID === uuid || sameDevice(candidate.context?.device, normalized));
     let accessory = this.accessories.get(uuid) || matchingAccessories[0];
     const duplicates = matchingAccessories.filter((candidate) => candidate !== accessory);
     if (duplicates.length) {
+      for (const duplicate of duplicates) {
+        this.handlers.get(duplicate.UUID)?.shutdown();
+        this.handlers.delete(duplicate.UUID);
+      }
       this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, duplicates);
       for (const [key, candidate] of this.accessories) if (duplicates.includes(candidate)) this.accessories.delete(key);
+      this.log.info(`Removed ${duplicates.length} duplicate cached Awair ${duplicates.length === 1 ? 'accessory' : 'accessories'}: ${identity}`);
     }
     const name = normalized.name || normalized.device_uuid || normalized.host || normalized.ip;
 
     if (!accessory) {
       accessory = new this.api.platformAccessory(name, uuid);
-      this.accessories.set(uuid, accessory);
       this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
-      accessory.context.device = { ...normalized };
       this.log.info(`Added ${discovered ? 'discovered' : 'configured'} Awair: ${name}`);
     } else if (accessory.displayName !== name) {
       accessory.updateDisplayName(name);
     }
 
+    if (!accessory.context) accessory.context = {};
     const contextDevice = accessory.context?.device || {};
     const aliases = [...new Set([
-       ...(contextDevice.aliases || []), contextDevice.host, contextDevice.ip,
+      ...(contextDevice.aliases || []), contextDevice.host, contextDevice.ip,
       normalized.host, normalized.ip,
     ].filter(Boolean))];
     for (const [key, candidate] of this.accessories) if (candidate === accessory) this.accessories.delete(key);
-    this.accessories.set(uuid, accessory);
+    const accessoryUuid = accessory.UUID || uuid;
+    this.accessories.set(accessoryUuid, accessory);
     accessory.context.device = { ...(accessory.context.device || {}), ...normalized, aliases };
     this.api.updatePlatformAccessories([accessory]);
 
-    this.handlers.get(uuid)?.shutdown();
+    this.handlers.get(accessoryUuid)?.shutdown();
     const handler = new AwairAccessory(this, accessory, accessory.context.device);
-    this.handlers.set(uuid, handler);
+    this.handlers.set(accessoryUuid, handler);
     handler.start();
   }
 
@@ -124,6 +129,33 @@ class AwairPlatform {
 
 function deviceIdentity(device = {}) {
   return String(device.device_uuid || device.wifi_mac || device.serial || device.host || device.ip || '').toLowerCase();
+}
+
+function sameDevice(first = {}, second = {}) {
+  const firstHardware = identifiers(first, ['device_uuid', 'wifi_mac']);
+  const secondHardware = identifiers(second, ['device_uuid', 'wifi_mac']);
+  if (intersects(firstHardware, secondHardware)) return true;
+
+  // Do not merge two known devices merely because DHCP reused an address.
+  for (const field of ['device_uuid', 'wifi_mac']) {
+    const firstValue = identifier(first[field]);
+    const secondValue = identifier(second[field]);
+    if (firstValue && secondValue && firstValue !== secondValue) return false;
+  }
+  return intersects(identifiers(first), identifiers(second));
+}
+
+function identifiers(device, fields = ['device_uuid', 'wifi_mac', 'serial', 'host', 'ip', 'aliases']) {
+  const values = fields.flatMap((field) => field === 'aliases' ? device.aliases || [] : [device[field]]);
+  return new Set(values.map(identifier).filter(Boolean));
+}
+
+function intersects(first, second) {
+  return [...first].some((value) => second.has(value));
+}
+
+function identifier(value) {
+  return value ? String(value).toLowerCase() : '';
 }
 
 module.exports = { AwairPlatform, PLUGIN_NAME, PLATFORM_NAME };
