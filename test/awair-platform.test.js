@@ -14,6 +14,70 @@ function createApi() {
   };
 }
 
+function createPlatformApi() {
+  const registered = [];
+  const unregistered = [];
+  const updated = [];
+  const Service = {
+    AccessoryInformation: 'information',
+    AirQualitySensor: 'air-quality',
+    TemperatureSensor: 'temperature',
+    HumiditySensor: 'humidity',
+    CarbonDioxideSensor: 'carbon-dioxide',
+    LightSensor: 'light',
+  };
+  const Characteristic = {
+    Manufacturer: 'manufacturer',
+    Model: 'model',
+    SerialNumber: 'serial-number',
+    FirmwareRevision: 'firmware-revision',
+    CurrentTemperature: 'current-temperature',
+    CurrentRelativeHumidity: 'current-humidity',
+    VOCDensity: 'voc-density',
+    PM2_5Density: 'pm2.5-density',
+    PM10Density: 'pm10-density',
+    CurrentAmbientLightLevel: 'light-level',
+    CarbonDioxideLevel: 'carbon-dioxide-level',
+    CarbonDioxideDetected: 'carbon-dioxide-detected',
+    AirQuality: 'air-quality',
+  };
+
+  function PlatformAccessory(name, uuid) {
+    this.displayName = name;
+    this.UUID = uuid;
+    this.context = {};
+    this.services = new Map();
+  }
+  PlatformAccessory.prototype.updateDisplayName = function(name) { this.displayName = name; };
+  PlatformAccessory.prototype.getService = function(type) { return this.services.get(type); };
+  PlatformAccessory.prototype.getServiceById = function(type, name) { return this.services.get(`${type}:${name}`); };
+  PlatformAccessory.prototype.addService = function(type, name, subtype) {
+    const characteristics = new Map();
+    const mockService = {
+      setCharacteristic() { return this; },
+      updateCharacteristic() { return this; },
+      setPrimaryService() {},
+      addLinkedService() {},
+      getCharacteristic(characteristic) {
+        if (!characteristics.has(characteristic)) characteristics.set(characteristic, { value: 0, setProps() {} });
+        return characteristics.get(characteristic);
+      },
+    };
+    this.services.set(subtype ? `${type}:${subtype}` : type, mockService);
+    return mockService;
+  };
+
+  const api = {
+    hap: { Service, Characteristic, uuid: { generate: (value) => `uuid-${value}` } },
+    platformAccessory: PlatformAccessory,
+    on() {},
+    registerPlatformAccessories(_plugin, _platform, accessories) { registered.push(...accessories); },
+    unregisterPlatformAccessories(_plugin, _platform, accessories) { unregistered.push(...accessories); },
+    updatePlatformAccessories(accessories) { updated.push(...accessories); },
+  };
+  return { api, registered, unregistered, updated };
+}
+
 test('invalid configured devices are reported without an unhandled rejection', async () => {
   const warnings = [];
   const platform = new AwairPlatform({ warn: (message) => warnings.push(message) }, {
@@ -85,6 +149,118 @@ test('live device metadata replaces cached generic values', async (t) => {
   assert.equal(device.version, '1.2.8');
   assert.equal(device.model, 'awair-r2');
   assert.equal(device.serial, '70:88:6B:10:59:0F');
+});
+
+test('a configured device keeps one accessory while transitioning from offline to online', async (t) => {
+  const originalFetch = global.fetch;
+  let settingsAvailable = false;
+  global.fetch = async (url) => {
+    if (String(url).includes('/settings/config/data')) {
+      if (!settingsAvailable) throw new Error('device offline');
+      return { ok: true, json: async () => ({
+        device_uuid: 'awair-element_test',
+        wifi_mac: '70:88:6b:00:00:01',
+        fw_version: '1.2.3',
+      }) };
+    }
+    return { ok: true, json: async () => ({}) };
+  };
+  t.after(() => { global.fetch = originalFetch; });
+
+  const { api, registered, unregistered } = createPlatformApi();
+  const platform = new AwairPlatform({ info() {}, warn() {}, debug() {} }, {}, api);
+  t.after(() => platform.shutdown());
+  const config = { ip: '192.0.2.10', name: 'Office Awair', polling_interval: 60 };
+
+  await platform.upsertDevice(config, false);
+  const accessory = registered[0];
+  settingsAvailable = true;
+  await platform.upsertDevice(config, false);
+
+  assert.equal(registered.length, 1);
+  assert.equal(unregistered.length, 0);
+  assert.equal(platform.accessories.size, 1);
+  assert.equal(accessory.UUID, 'uuid-homebridge-awair-local:192.0.2.10');
+  assert.equal(platform.accessories.get(accessory.UUID), accessory);
+  assert.equal(accessory.context.device.device_uuid, 'awair-element_test');
+  assert.equal(accessory.context.device.wifi_mac, '70:88:6b:00:00:01');
+});
+
+test('an existing hardware-ID duplicate is removed in favor of the configured accessory', async (t) => {
+  const originalFetch = global.fetch;
+  global.fetch = async (url) => ({
+    ok: true,
+    json: async () => String(url).includes('/settings/config/data') ? {
+      device_uuid: 'awair-element_test',
+      wifi_mac: '70:88:6b:00:00:01',
+      fw_version: '1.2.3',
+    } : {},
+  });
+  t.after(() => { global.fetch = originalFetch; });
+
+  const { api, registered, unregistered } = createPlatformApi();
+  const messages = [];
+  const platform = new AwairPlatform({ info: (message) => messages.push(message), warn() {}, debug() {} }, {}, api);
+  t.after(() => platform.shutdown());
+
+  const configuredUuid = api.hap.uuid.generate('homebridge-awair-local:192.0.2.10');
+  const hardwareUuid = api.hap.uuid.generate('homebridge-awair-local:awair-element_test');
+  const configuredAccessory = new api.platformAccessory('Office Awair', configuredUuid);
+  configuredAccessory.context.device = { ip: '192.0.2.10', serial: '192.0.2.10' };
+  const duplicateAccessory = new api.platformAccessory('awair-element_test', hardwareUuid);
+  duplicateAccessory.context.device = {
+    ip: '192.0.2.10',
+    device_uuid: 'awair-element_test',
+    wifi_mac: '70:88:6b:00:00:01',
+  };
+  platform.configureAccessory(configuredAccessory);
+  platform.configureAccessory(duplicateAccessory);
+
+  await platform.upsertDevice({ ip: '192.0.2.10', name: 'Office Awair', polling_interval: 60 }, false);
+
+  assert.equal(registered.length, 0);
+  assert.deepEqual(unregistered, [duplicateAccessory]);
+  assert.equal(platform.accessories.size, 1);
+  assert.equal(platform.accessories.get(configuredUuid), configuredAccessory);
+  assert.match(messages[0], /Removed 1 duplicate cached Awair accessory/);
+});
+
+test('different hardware IDs are not merged when devices share an endpoint', async (t) => {
+  const originalFetch = global.fetch;
+  global.fetch = async (url) => ({
+    ok: true,
+    json: async () => String(url).includes('/settings/config/data') ? {
+      device_uuid: 'awair-element_second',
+      wifi_mac: '70:88:6b:00:00:02',
+    } : {},
+  });
+  t.after(() => { global.fetch = originalFetch; });
+
+  const { api, registered, unregistered } = createPlatformApi();
+  const platform = new AwairPlatform({ info() {}, warn() {}, debug() {} }, {}, api);
+  t.after(() => platform.shutdown());
+  const existingAccessory = new api.platformAccessory(
+    'First Awair',
+    api.hap.uuid.generate('homebridge-awair-local:awair-element_first'),
+  );
+  existingAccessory.context.device = {
+    ip: '192.0.2.10',
+    device_uuid: 'awair-element_first',
+    wifi_mac: '70:88:6b:00:00:01',
+  };
+  platform.configureAccessory(existingAccessory);
+
+  await platform.upsertDevice({
+    ip: '192.0.2.10',
+    device_uuid: 'awair-element_second',
+    wifi_mac: '70:88:6b:00:00:02',
+    polling_interval: 60,
+  }, true);
+
+  assert.equal(registered.length, 1);
+  assert.equal(unregistered.length, 0);
+  assert.equal(platform.accessories.size, 2);
+  assert.notEqual(registered[0], existingAccessory);
 });
 
 test('upserting a manually configured device does not crash on missing context.device', async (t) => {

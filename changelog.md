@@ -4,6 +4,12 @@ All notable changes to `homebridge-awair-local` are documented in this file. Thi
 
 The entries below are based on the repository's release tags. Changes that were repeated in later merge or release notes are listed only with the first release that introduced them.
 
+## Unreleased
+
+### Fixed
+
+- Prevented duplicate Awair accessories when a configured device is temporarily unreachable by preserving its configured identity, reconciling cached endpoint aliases with later hardware identifiers, and removing redundant cached accessories.
+
 ## v2.2.2 (2026-08-10)
 
 ### Fixed
