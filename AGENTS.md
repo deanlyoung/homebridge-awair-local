@@ -36,7 +36,7 @@ npm test
 
 - For every user-visible change, first draft the final changelog entry.
 - Use that entry as the canonical PR description: the PR description must match it verbatim, except for optional PR-only metadata such as test notes or issue links.
-- Before opening or updating a PR, add the canonical entry under `Unreleased` in `changelog.md`.
+- Before opening or updating a normal PR, add the canonical entry under `Unreleased` in `changelog.md`. For a release PR, first draft the entry under `Unreleased`, then promote it to the versioned release heading in the same branch before opening the PR.
 - Do not create duplicate entries for the same change.
 
 ### Release checklist
@@ -61,5 +61,6 @@ Before pushing a release:
 ### Versioning policy
 
 - Normal PRs: add the canonical change summary to `Unreleased` in `changelog.md`. Do not change the released version number.
-- Release PRs only: select the appropriate Semantic Versioning bump, update all authoritative version locations, and move applicable `Unreleased` entries into the new version section.
+- Release PRs may combine the user-visible implementation, tests, changelog entry, and release-version metadata in one branch and one PR. Do not create a separate version-only release PR unless the implementation was intentionally merged as unreleased work.
+- For a release PR, select the appropriate Semantic Versioning bump, update all authoritative version locations, and move applicable `Unreleased` entries into the new version section. After it merges, create the annotated tag from the merged `master` commit.
 - Before any release-version bump, state the current version, proposed version, SemVer category (`patch`, `minor`, or `major`), and rationale.
