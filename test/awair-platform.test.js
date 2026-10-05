@@ -139,6 +139,52 @@ test('CO₂ thresholds default to alert at 1000 ppm and clear at 800 ppm', () =>
   assert.equal(awair.carbonDioxideThresholdOff, 800);
 });
 
+test('sensor values are clamped to their HomeKit characteristic ranges', () => {
+  const updates = new Map();
+  const sensor = { updateCharacteristic(characteristic, value) { updates.set(characteristic, value); } };
+  const awair = {
+    Characteristic: {
+      CurrentTemperature: 'temperature',
+      CurrentRelativeHumidity: 'humidity',
+      VOCDensity: 'voc',
+      PM2_5Density: 'pm2.5',
+      PM10Density: 'pm10',
+      CurrentAmbientLightLevel: 'light',
+      CarbonDioxideLevel: 'co2',
+      CarbonDioxideDetected: 'co2-detected',
+      AirQuality: 'air-quality',
+    },
+    temperature: sensor,
+    humidity: sensor,
+    airQuality: sensor,
+    light: sensor,
+    carbonDioxide: sensor,
+    vocMW: 72.6657827301974,
+    airQualityMethod: 'awair-pm25',
+    co2Detected() { return 1; },
+  };
+
+  AwairAccessory.prototype.applyData.call(awair, {
+    temp: 101,
+    humid: -1,
+    voc: 100000,
+    pm25: 1001,
+    pm10_est: -1,
+    lux: 0,
+    co2: 100001,
+  });
+
+  assert.equal(updates.get('temperature'), 100);
+  assert.equal(updates.get('humidity'), 0);
+  assert.equal(updates.get('voc'), 100000);
+  assert.equal(updates.get('pm2.5'), 1000);
+  assert.equal(updates.get('pm10'), 0);
+  assert.equal(updates.get('light'), 0.0001);
+  assert.equal(updates.get('co2'), 100000);
+  assert.equal(updates.get('co2-detected'), 1);
+  assert.equal(updates.get('air-quality'), 5);
+});
+
 test('live device metadata replaces cached generic values', async (t) => {
   const originalFetch = global.fetch;
   global.fetch = async () => ({ ok: true, json: async () => ({ device_uuid: 'awair-r2_3392', wifi_mac: '70:88:6B:10:59:0F', fw_version: '1.2.8' }) });

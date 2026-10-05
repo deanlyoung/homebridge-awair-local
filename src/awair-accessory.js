@@ -95,15 +95,15 @@ class AwairAccessory {
 
   applyData(data) {
     const { Characteristic } = this;
-    update(this.temperature, Characteristic.CurrentTemperature, data.temp);
-    update(this.humidity, Characteristic.CurrentRelativeHumidity, data.humid);
-    update(this.airQuality, Characteristic.VOCDensity, hasNumber(data.voc) ? convertChemicals(data.voc, this.vocMW, data.temp) : undefined);
-    update(this.airQuality, Characteristic.PM2_5Density, data.pm25);
-    update(this.airQuality, Characteristic.PM10Density, data.pm10_est);
-    if (this.light) update(this.light, Characteristic.CurrentAmbientLightLevel, data.lux);
+    updateInRange(this.temperature, Characteristic.CurrentTemperature, data.temp, -100, 100);
+    updateInRange(this.humidity, Characteristic.CurrentRelativeHumidity, data.humid, 0, 100);
+    updateInRange(this.airQuality, Characteristic.VOCDensity, hasNumber(data.voc) ? convertChemicals(data.voc, this.vocMW, data.temp) : undefined, 0, 100000);
+    updateInRange(this.airQuality, Characteristic.PM2_5Density, data.pm25, 0, 1000);
+    updateInRange(this.airQuality, Characteristic.PM10Density, data.pm10_est, 0, 1000);
+    if (this.light) updateInRange(this.light, Characteristic.CurrentAmbientLightLevel, data.lux, 0.0001, 64000);
     if (this.carbonDioxide && hasNumber(data.co2)) {
       const co2 = Number(data.co2);
-      update(this.carbonDioxide, Characteristic.CarbonDioxideLevel, co2);
+      updateInRange(this.carbonDioxide, Characteristic.CarbonDioxideLevel, co2, 0, 100000);
       update(this.carbonDioxide, Characteristic.CarbonDioxideDetected, this.co2Detected(co2));
     }
     update(this.airQuality, Characteristic.AirQuality, airQuality(data, this.airQualityMethod));
@@ -120,6 +120,9 @@ class AwairAccessory {
 
 function service(accessory, Type, name) { return accessory.getServiceById(Type, name) || accessory.addService(Type, name, name); }
 function update(service, characteristic, value) { if (service && hasNumber(value)) service.updateCharacteristic(characteristic, Number(value)); }
+function updateInRange(service, characteristic, value, min, max) {
+  if (service && hasNumber(value)) service.updateCharacteristic(characteristic, Math.min(Math.max(Number(value), min), max));
+}
 function hasNumber(value) { return value !== undefined && value !== null && value !== '' && Number.isFinite(Number(value)); }
 function number(value, fallback) { return hasNumber(value) ? Number(value) : fallback; }
 function positiveNumber(value, fallback) { return number(value, fallback) > 0 ? number(value, fallback) : fallback; }
