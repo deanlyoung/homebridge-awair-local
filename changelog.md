@@ -4,7 +4,7 @@ All notable changes to `homebridge-awair-local` are documented in this file. Thi
 
 The entries below are based on the repository's release tags. Changes that were repeated in later merge or release notes are listed only with the first release that introduced them.
 
-## Unreleased
+## v2.2.4 (2026-10-05)
 
 ### Fixed
 
