@@ -4,6 +4,12 @@ All notable changes to `homebridge-awair-local` are documented in this file. Thi
 
 The entries below are based on the repository's release tags. Changes that were repeated in later merge or release notes are listed only with the first release that introduced them.
 
+## v2.2.5 (2026-11-14)
+
+### Other Changes
+
+- Added verified support for Node.js 26 LTS.
+
 ## v2.2.4 (2026-10-05)
 
 ### Fixed
