@@ -11,7 +11,7 @@ The plugin communicates only with Awair devices on the local network. It contain
 ## Requirements
 
 - Homebridge 2.0 or newer
-- Node.js 22 or 24
+- Node.js 22, 24, or 26
 - Awair Local API enabled. The device must answer `/air-data/latest` and `/settings/config/data` on the local network.
 
 ## Configuration
@@ -52,4 +52,4 @@ Replace each old `accessories` entry with an object in the platform's `devices` 
 
 ## Development and releases
 
-Run `npm run lint` and `npm test` before opening a pull request. CI verifies installation, linting, tests, and the package contents on Node.js 22 and 24. Publishing from `master` creates the npm release, an annotated Git tag, and a GitHub release with generated notes.
+Run `npm run lint` and `npm test` before opening a pull request. CI verifies installation, linting, tests, and the package contents on Node.js 22, 24, and 26. Publishing from `master` creates the npm release, an annotated Git tag, and a GitHub release with generated notes.
